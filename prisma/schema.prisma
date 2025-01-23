@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+// Utilisateurs
+model User {
+  id                  String  @id @default(cuid())
+  email               String  @unique
+  firstname           String?
+  password            String
+  isResettingPassword Boolean @default(false)
+  resetPasswordToken  String? @unique
+  avatarFileKey       String? @unique
+
+  stripeAccountId String? @unique
+  stripeProductId String? @unique
+
+  givenDonations    Donation[] @relation("givingUser")
+  receivedDonations Donation[] @relation("receivingUser")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+model Donation {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  stripeProductId String
+  stripePriceId   String   @unique
+
+  givingUser   User   @relation("givingUser", fields: [givingUserId], references: [id])
+  givingUserId String
+
+  receivingUser   User   @relation("receivingUser", fields: [receivingUserId], references: [id])
+  receivingUserId String
+  // Amount is in cents
+  amount          Int?
+
+  @@index([givingUserId])
+  @@index([receivingUserId])
+}
+
+// A propos
+model About {
+  id        String   @id @default(cuid())
+  label     String
+  number    Int
+  priority  Int      @default(0)
+  masqued   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Experiences
+model Experience {
+  id           String   @id @default(cuid())
+  date         String
+  titre        String
+  localisation String
+  description  String
+  priority     Int      @default(0)
+  masqued      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Passions
+model Passion {
+  id        String   @id @default(cuid())
+  titre     String
+  emoji     String?
+  top       Int      @default(0)
+  left      Int      @default(0)
+  priority  Int      @default(0)
+  masqued   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ItemsNavigation
+model ItemNavigation {
+  id        String   @id @default(cuid())
+  label     String
+  link      String
+  className String
+  priority  Int      @default(0)
+  masqued   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Projects
+model Project {
+  id          String   @id @default(cuid())
+  titre       String
+  imgSrc      String?
+  projectLink String
+  tags        String[]
+  priority    Int      @default(0)
+  masqued     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Testimoniaux
+model Testimonial {
+  id        String   @id @default(cuid())
+  content   String
+  imgSrc    String?
+  name      String
+  compagny  String
+  stars     Int
+  masqued   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Catégories de compétence
+model SkillCategory {
+  id        String   @id @default(cuid())
+  intitule  String
+  skills    Skill[]
+  priority  Int      @default(0)
+  masqued   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Compétences
+model Skill {
+  id          String        @id @default(cuid())
+  label       String
+  description String
+  stars       Int
+  iconSrc     String?
+  masqued     Boolean       @default(false)
+  categoryId  String
+  category    SkillCategory @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+}
