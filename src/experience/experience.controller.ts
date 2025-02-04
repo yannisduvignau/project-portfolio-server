@@ -15,7 +15,16 @@ import { ExperienceService } from './experience.service';
 import { UpdateExperienceDto } from './dto/update-experience.dto';
 import { CreateExperienceDto } from './dto/create-experience.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Observable } from 'rxjs';
 
 @ApiTags('experiences')
 @Controller('experiences')
@@ -26,24 +35,15 @@ export class ExperienceController {
    * INDEX
    * _
    * @description index all experiences
-   * @road localhost:3000/experiences
+   * @route GET /experiences
    * @returns http resources
    */
   @Get()
+  @ApiOperation({ summary: 'Get all experiences' })
+  @ApiResponse({ status: 200, description: 'Get all experiences successfully' })
+  @ApiNotFoundResponse({ description: 'No experiences found' })
   async getExperiences() {
     return await this.experienceService.getExperiences();
-  }
-
-  /**
-   * INDEX
-   * _
-   * @description index all experiences
-   * @road localhost:3000/experiences
-   * @returns http resources
-   */
-  @Get('/admin')
-  async getExperiencesAdmin() {
-    return await this.experienceService.getExperiencesAdmin();
   }
 
   /**
@@ -53,10 +53,19 @@ export class ExperienceController {
    * @route GET /experiences/paginate?page={page}
    * @returns http resources
    */
+  @UseGuards(JwtAuthGuard)
   @Get('/paginate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all experiences' })
+  @ApiResponse({ status: 200, description: 'Get all experiences successfully' })
+  @ApiNotFoundResponse({ description: 'No experiences found' })
   async getExperiencesPaginate(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('filters')
+    filters?: {
+      createdAt?: [Date, Date];
+    },
     @Query('search') search?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10); // Défaut: page 1
@@ -67,38 +76,35 @@ export class ExperienceController {
         page: pageNumber,
         pageSize: pageSizeNumber,
         search: search || '', // Recherche vide par défaut
+        filters: filters || {}, // Recherche vide par défaut
       });
     } catch (error) {
-      console.error('Error fetching paginated skills:', error.message);
+      console.error('Error fetching paginated experiences:', error.message);
       throw new HttpException(
-        'Erreur lors de la récupération des compétences',
+        'Erreur lors de la récupération des expériences',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * SHOW
-   * _
-   * @description index one experience (by ID)
-   * @road localhost:3000/experiences/{id}
-   * @returns http resources
-   */
-  @Get('/:experienceId')
-  async getExperienceByID(@Param('experienceId') experienceId: string) {
-    return await this.experienceService.getExperienceByID({ experienceId });
-  }
-
-  /**
    * POST
    * _
    * @description create an experience
-   * @road localhost:3000/experiences
+   * @route GET /experiences
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createExperience(@Body() createExperienceDto: CreateExperienceDto) {
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create an experience' })
+  @ApiCreatedResponse({
+    description: 'The experience has been successfully created.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  async createExperience(
+    @Body() createExperienceDto: CreateExperienceDto,
+  ): Promise<Observable<CreateExperienceDto>> {
     return await this.experienceService.createExperience({
       createExperienceDto,
     });
@@ -108,15 +114,21 @@ export class ExperienceController {
    * PUT
    * _
    * @description update an experience
-   * @road localhost:3000/experiences/{id}
+   * @route GET /experiences/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
   @Put('/:experienceId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update an experience' })
+  @ApiCreatedResponse({
+    description: 'The experience has been successfully updated.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async updateExperience(
     @Param('experienceId') experienceId: string,
     @Body() updateExperienceDto: UpdateExperienceDto,
-  ) {
+  ): Promise<Observable<UpdateExperienceDto>> {
     return await this.experienceService.updateExperience({
       experienceId,
       updateExperienceDto,
@@ -132,6 +144,11 @@ export class ExperienceController {
    */
   @UseGuards(JwtAuthGuard)
   @Delete('/:experienceId')
+  @ApiOperation({ summary: 'Delete an experience' })
+  @ApiCreatedResponse({
+    description: 'The experience has been successfully deleted.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async deleteExperience(@Param('experienceId') experienceId: string) {
     return await this.experienceService.deleteExperience({ experienceId });
   }

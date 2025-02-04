@@ -11,6 +11,7 @@ export async function seedReview() {
       stars: 5,
       imgSrc: '/src/assets/sophiaR.jpg',
       company: 'PixelForge',
+      masqued: false,
     },
     {
       content:
@@ -19,6 +20,7 @@ export async function seedReview() {
       stars: 5,
       imgSrc: '/src/assets/ethanC.jpeg',
       company: 'NexaWave',
+      masqued: false,
     },
     {
       content:
@@ -27,6 +29,7 @@ export async function seedReview() {
       stars: 5,
       imgSrc: '/src/assets/liamB.png',
       company: 'CodeCraft',
+      masqued: false,
     },
     {
       content:
@@ -35,6 +38,7 @@ export async function seedReview() {
       stars: 5,
       imgSrc: '/src/assets/noahW.jpeg',
       company: 'BrightWeb',
+      masqued: false,
     },
     {
       content:
@@ -43,6 +47,7 @@ export async function seedReview() {
       stars: 5,
       imgSrc: '/src/assets/avaT.jpg',
       company: 'TechMosaic',
+      masqued: false,
     },
     {
       content:
@@ -51,24 +56,26 @@ export async function seedReview() {
       stars: 5,
       imgSrc: '/src/assets/jonathan.jpeg',
       company: 'Skyline Digital',
+      masqued: false,
     },
   ];
 
   for (const item of reviews) {
     // Vérifie si un élément avec le même titre existe déjà
-    const existingItem = await prisma.testimonial.findFirst({
+    const existingItem = await prisma.review.findFirst({
       where: { name: item.name },
     });
 
     // Si l'élément n'existe pas, il est créé
     if (!existingItem) {
-      await prisma.testimonial.create({
+      await prisma.review.create({
         data: {
           name: item.name,
           stars: item.stars,
           imgSrc: item.imgSrc,
           content: item.content,
-          compagny: item.company,
+          company: item.company,
+          masqued: item.masqued,
         },
       });
     }

@@ -35,7 +35,7 @@ export class AboutController {
    * INDEX
    * _
    * @description index all abouts ref
-   * @road localhost:3000/abouts
+   * @route GET /abouts
    * @returns http resources
    */
   @Get()
@@ -49,26 +49,13 @@ export class AboutController {
   /**
    * INDEX
    * _
-   * @description index all abouts ref
-   * @road localhost:3000/abouts
-   * @returns http resources
-   */
-  @Get('/admin')
-  @ApiOperation({ summary: 'Get all abouts' })
-  @ApiResponse({ status: 200, description: 'Get all abouts successfully' })
-  @ApiNotFoundResponse({ description: 'No abouts found' })
-  async getAboutsAdmin() {
-    return await this.aboutService.getAboutsAdmin();
-  }
-
-  /**
-   * INDEX
-   * _
    * @description index all abouts with pagination
    * @route GET /abouts/paginate?page={page}
    * @returns http resources
    */
+  @UseGuards(JwtAuthGuard)
   @Get('/paginate')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all abouts' })
   @ApiResponse({ status: 200, description: 'Get all abouts successfully' })
   @ApiNotFoundResponse({ description: 'No abouts found' })
@@ -94,40 +81,25 @@ export class AboutController {
         filters: filters || {}, // Recherche vide par défaut
       });
     } catch (error) {
-      console.error('Error fetching paginated skills:', error.message);
+      console.error('Error fetching paginated abouts:', error.message);
       throw new HttpException(
-        'Erreur lors de la récupération des compétences',
+        'Erreur lors de la récupération des à propos',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * SHOW
-   * _
-   * @description index one about ref
-   * @road localhost:3000/abouts/{id}
-   * @returns http resources
-   */
-  @Get('/:aboutId')
-  @ApiOperation({ summary: 'Get all abouts' })
-  @ApiResponse({ status: 200, description: 'Get all abouts successfully' })
-  @ApiNotFoundResponse({ description: 'No abouts found' })
-  async getAboutByID(@Param('aboutId') aboutId: string) {
-    return await this.aboutService.getAboutByID({ aboutId });
-  }
-
-  /**
    * POST
    * _
    * @description create an about ref
-   * @road localhost:3000/abouts
+   * @route GET /abouts
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all abouts' })
+  @ApiOperation({ summary: 'Create an about' })
   @ApiCreatedResponse({
     description: 'The about has been successfully created.',
   })
@@ -142,16 +114,21 @@ export class AboutController {
    * PUT
    * _
    * @description update an about ref
-   * @road localhost:3000/abouts/{id}
+   * @route GET /abouts/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
   @Put('/:aboutId')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update an about' })
+  @ApiCreatedResponse({
+    description: 'The about has been successfully updated.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async updateAbout(
     @Param('aboutId') aboutId: string,
     @Body() updateAboutDto: UpdateAboutDto,
-  ) {
+  ): Promise<Observable<UpdateAboutDto>> {
     return await this.aboutService.updateAbout({ aboutId, updateAboutDto });
   }
 
@@ -159,12 +136,17 @@ export class AboutController {
    * DELETE
    * _
    * @description delete an about ref
-   * @road localhost:3000/abouts/{id}
+   * @route GET /abouts/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Delete('/:aboutId')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete an about' })
+  @ApiCreatedResponse({
+    description: 'The about has been successfully deleted.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async deleteAbout(@Param('aboutId') aboutId: string) {
     return await this.aboutService.deleteAbout({ aboutId });
   }

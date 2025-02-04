@@ -1,20 +1,19 @@
 services:
-  nestjs-chat-api_dev:
+  project-portfolio-api_dev:
     environment:
       - DATABASE_URL
       - JWT_SECRET
       - PORT
-      - RESEND_API_KEY
+      - ITEM_PER_PAGE
       - FRONTEND_URL
-      - AWS_ACCESS_KEY
-      - AWS_SECRET
-      - AWS_BUCKET_NAME
-      - AWS_REGION
-      - STRIPE_SECRET_KEY
-      - STRIPE_WEBHOOK_SECRET
+      - MAIL_PUBLIC_API_KEY
+      - MAIL_SERVICE_ID
+      - MAIL_TEMPLATE_FOR_CONTACT
+      - MAIL_TEMPLATE_FOR_CREATE_ACCOUNT
+      - MAIL_TEMPLATE_FOR_PASSWORD_RESET
 
 
-    container_name: nestjs-chat-api_dev
+    container_name: project-portfolio-api_dev
     build:
       context: .
       dockerfile: Dockerfile

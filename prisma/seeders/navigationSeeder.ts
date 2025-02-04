@@ -4,12 +4,48 @@ const prisma = new PrismaClient();
 
 export async function seedNavigation() {
   const navItems = [
-    { label: 'Accueil', link: 'hero', className: 'nav-link' },
-    { label: 'Projects', link: 'projects', className: 'nav-link' },
-    { label: 'Compétences', link: 'skills', className: 'nav-link' },
-    { label: 'Expériences', link: 'experience', className: 'nav-link' },
-    { label: 'Cybersécurité', link: 'cyber', className: 'nav-link' },
-    { label: 'Contact', link: 'contact', className: 'nav-link md:hidden' },
+    {
+      label: 'Accueil',
+      link: 'hero',
+      className: 'nav-link',
+      priority: 1,
+      masqued: false,
+    },
+    {
+      label: 'Projects',
+      link: 'projects',
+      className: 'nav-link',
+      priority: 2,
+      masqued: false,
+    },
+    {
+      label: 'Compétences',
+      link: 'skills',
+      className: 'nav-link',
+      priority: 3,
+      masqued: false,
+    },
+    {
+      label: 'Expériences',
+      link: 'experience',
+      className: 'nav-link',
+      priority: 4,
+      masqued: false,
+    },
+    {
+      label: 'Cybersécurité',
+      link: 'cyber',
+      className: 'nav-link',
+      priority: 5,
+      masqued: false,
+    },
+    {
+      label: 'Contact',
+      link: 'contact',
+      className: 'nav-link md:hidden',
+      priority: 6,
+      masqued: false,
+    },
   ];
 
   for (const item of navItems) {
@@ -25,6 +61,8 @@ export async function seedNavigation() {
           label: item.label,
           link: item.link,
           className: item.className,
+          priority: item.priority,
+          masqued: item.masqued,
         },
       });
     }

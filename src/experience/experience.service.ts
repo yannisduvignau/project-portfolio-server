@@ -19,27 +19,10 @@ export class ExperienceService extends BaseService<'experience'> {
     return await this.getAll({
       id: true,
       date: true,
-      titre: true,
-      localisation: true,
+      title: true,
+      location: true,
       description: true,
       priority: true,
-    });
-  }
-
-  /**
-   * INDEX
-   * _
-   * @description get all experiences
-   */
-  async getExperiencesAdmin() {
-    return await this.getAll({
-      id: true,
-      date: true,
-      titre: true,
-      localisation: true,
-      description: true,
-      priority: true,
-      createdAt: true,
     });
   }
 
@@ -52,50 +35,64 @@ export class ExperienceService extends BaseService<'experience'> {
     page,
     pageSize,
     search,
+    filters,
   }: {
     page: number;
     pageSize: number;
     search: string;
+    filters?: {
+      createdAt?: [Date, Date];
+    }; // Refined filters type
   }) {
     const searchCondition = search
       ? {
           OR: [
-            { titre: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
+            { title: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
             { date: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
-            { localisation: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
+            { location: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
             { description: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
           ],
         }
       : {};
+
+    const filtersObject =
+      typeof filters === 'string' ? JSON.parse(filters) : filters;
+
+    // Build filters condition
+    const filtersCondition = filtersObject
+      ? {
+          AND: [
+            filtersObject.createdAt
+              ? {
+                  createdAt: {
+                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
+                    lte: filtersObject.createdAt[1], // Less than or equal to end date
+                  },
+                }
+              : null,
+          ].filter(Boolean),
+          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
+        }
+      : {};
+
     return await this.getAllPaginate(
       page,
       pageSize,
       {
         id: true,
         date: true,
-        titre: true,
-        localisation: true,
+        title: true,
+        location: true,
         description: true,
         priority: true,
         createdAt: true,
       },
-      searchCondition,
+      {
+        AND: [searchCondition, filtersCondition].filter(
+          (condition) => Object.keys(condition).length > 0,
+        ), // Combine conditions
+      },
     );
-  }
-
-  /**
-   * SHOW
-   * _
-   * @description get one experience
-   */
-  async getExperienceByID({ experienceId }: { experienceId: string }) {
-    return await this.getById(experienceId, {
-      id: true,
-      date: true,
-      titre: true,
-      localisation: true,
-      description: true,
-    });
   }
 
   /**

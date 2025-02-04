@@ -4,9 +4,9 @@ const prisma = new PrismaClient();
 
 export async function seedAbout() {
   const aboutItems = [
-    { label: "Années d'expériences", number: 7, priority: 3 },
-    { label: 'Clients', number: 1, priority: 1 },
-    { label: 'Projets', number: 10, priority: 2 },
+    { label: "Années d'expériences", number: 7, priority: 3, masqued: false },
+    { label: 'Clients', number: 1, priority: 1, masqued: false },
+    { label: 'Projets', number: 10, priority: 2, masqued: false },
   ];
 
   for (const item of aboutItems) {
@@ -22,6 +22,7 @@ export async function seedAbout() {
           label: item.label,
           number: item.number,
           priority: item.priority,
+          masqued: item.masqued,
         },
       });
     }

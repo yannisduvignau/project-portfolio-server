@@ -21,16 +21,7 @@ export class AboutService extends BaseService<'about'> {
       label: true,
       number: true,
       priority: true,
-    });
-  }
-
-  async getAboutsAdmin() {
-    return await this.getAll({
-      id: true,
-      label: true,
-      number: true,
-      priority: true,
-      createdAt: true,
+      masqued: true,
     });
   }
 
@@ -111,19 +102,6 @@ export class AboutService extends BaseService<'about'> {
         ), // Combine conditions
       },
     );
-  }
-
-  /**
-   * SHOW
-   * _
-   * @description get one about ref (by ID)
-   */
-  async getAboutByID({ aboutId }: { aboutId: string }) {
-    return await this.getById(aboutId, {
-      id: true,
-      label: true,
-      number: true,
-    });
   }
 
   /**
