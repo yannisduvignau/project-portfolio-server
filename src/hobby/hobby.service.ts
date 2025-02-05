@@ -18,7 +18,7 @@ export class HobbyService extends BaseService<'hobby'> {
   async getHobbies() {
     return await this.getAll({
       id: true,
-      titre: true,
+      title: true,
       emoji: true,
       top: true,
       left: true,
@@ -92,7 +92,7 @@ export class HobbyService extends BaseService<'hobby'> {
       pageSize,
       {
         id: true,
-        titre: true,
+        title: true,
         emoji: true,
         top: true,
         left: true,

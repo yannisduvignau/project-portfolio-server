@@ -18,7 +18,7 @@ export class SkillService extends BaseService<'skill'> {
   async getSkills() {
     return await this.getAll({
       id: true,
-      label: true,
+      title: true,
       description: true,
       stars: true,
       iconSrc: true,
@@ -51,7 +51,7 @@ export class SkillService extends BaseService<'skill'> {
     const searchCondition = search
       ? {
           OR: [
-            { label: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
+            { title: { contains: search, mode: 'insensitive' } }, // Recherche par title (insensible à la casse)
             { description: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
           ],
         }
@@ -94,7 +94,7 @@ export class SkillService extends BaseService<'skill'> {
       pageSize,
       {
         id: true,
-        label: true,
+        title: true,
         description: true,
         stars: true,
         iconSrc: true,
@@ -120,7 +120,7 @@ export class SkillService extends BaseService<'skill'> {
   async getSkillById({ skillId }: { skillId: string }) {
     return await this.getById(skillId, {
       id: true,
-      label: true,
+      title: true,
       description: true,
       stars: true,
       iconSrc: true,

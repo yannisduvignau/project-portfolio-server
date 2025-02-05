@@ -18,7 +18,7 @@ export class ProjectService extends BaseService<'project'> {
   async getProjects() {
     return await this.getAll({
       id: true,
-      titre: true,
+      title: true,
       imgSrc: true,
       projectLink: true,
       tags: true,
@@ -93,7 +93,7 @@ export class ProjectService extends BaseService<'project'> {
       pageSize,
       {
         id: true,
-        titre: true,
+        title: true,
         imgSrc: true,
         projectLink: true,
         tags: true,
@@ -117,7 +117,7 @@ export class ProjectService extends BaseService<'project'> {
   async getProjectById({ projectId }: { projectId: string }) {
     return await this.getById(projectId, {
       id: true,
-      titre: true,
+      title: true,
       imgSrc: true,
       projectLink: true,
       tags: true,

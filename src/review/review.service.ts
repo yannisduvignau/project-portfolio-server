@@ -22,7 +22,6 @@ export class ReviewService extends BaseService<'review'> {
       imgSrc: true,
       name: true,
       company: true,
-      priority: true,
       masqued: true,
     });
   }
@@ -114,7 +113,6 @@ export class ReviewService extends BaseService<'review'> {
         name: true,
         company: true,
         stars: true,
-        priority: true,
         masqued: true,
         createdAt: true,
       },

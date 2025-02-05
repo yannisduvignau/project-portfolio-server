@@ -8,7 +8,7 @@ export class CreateSkillCategoryDto {
   })
   @IsNotEmpty({ message: "L'intitulé est obligatoire." })
   @IsString({ message: "L'intitulé doit être une chaîne de caractères." })
-  intitule: string;
+  title: string;
 
   @ApiProperty({
     description: 'La priorité pour l’affichage.',

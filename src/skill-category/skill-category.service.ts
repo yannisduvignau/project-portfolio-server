@@ -18,7 +18,7 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
   async getAllCategories() {
     return await this.getAllOrderByPriority({
       id: true,
-      intitule: true,
+      title: true,
       priority: true,
       masqued: true,
       skills: true,
@@ -48,7 +48,7 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
     const searchCondition = search
       ? {
           OR: [
-            { intitule: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
+            { title: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
           ],
         }
       : {};
@@ -90,7 +90,7 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
       pageSize,
       {
         id: true,
-        intitule: true,
+        title: true,
         skills: true,
         priority: true,
         masqued: true,
