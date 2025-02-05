@@ -81,8 +81,8 @@ model Hobby {
   updatedAt DateTime @updatedAt
 }
 
-// ItemsNavigation
-model Navigation {
+// ItemsSection
+model Section {
   id        String   @id @default(cuid())
   label     String
   link      String

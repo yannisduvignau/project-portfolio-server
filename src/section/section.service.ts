@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/base.service';
 import { PrismaService } from 'src/prisma.service';
-import { UpdateNavigationDto } from './dto/update-navigation.dto';
-import { CreateNavigationDto } from './dto/create-navigation.dto';
+import { UpdateSectionDto } from './dto/update-section.dto';
+import { CreateSectionDto } from './dto/create-section.dto';
 
 @Injectable()
-export class NavigationService extends BaseService<'navigation'> {
+export class SectionService extends BaseService<'section'> {
   constructor(prismaService: PrismaService) {
-    super(prismaService, 'navigation');
+    super(prismaService, 'section');
   }
 
   /**
    * INDEX
    * _
-   * @description get all navigation items
+   * @description get all section items
    */
-  async getAllNavigations() {
-    return await this.getAll({
+  async getAllSections() {
+    return await this.getAllOrderByPriority({
       id: true,
       label: true,
       link: true,
@@ -29,9 +29,9 @@ export class NavigationService extends BaseService<'navigation'> {
   /**
    * INDEX
    * _
-   * @description get all navigations with pagination, search, and filters
+   * @description get all sections with pagination, search, and filters
    */
-  async getNavigationsPaginate({
+  async getSectionsPaginate({
     page,
     pageSize,
     search,
@@ -111,16 +111,16 @@ export class NavigationService extends BaseService<'navigation'> {
   /**
    * POST
    * _
-   * @description create an item for navigation
+   * @description create an item for section
    */
-  async createNavigation({
-    createNavigationDto,
+  async createSection({
+    createSectionDto,
   }: {
-    createNavigationDto: CreateNavigationDto;
+    createSectionDto: CreateSectionDto;
   }) {
     const sanitizedData = {
-      ...createNavigationDto,
-      priority: Number(createNavigationDto.priority),
+      ...createSectionDto,
+      priority: Number(createSectionDto.priority),
     };
     return await this.create(sanitizedData);
   }
@@ -128,20 +128,20 @@ export class NavigationService extends BaseService<'navigation'> {
   /**
    * PUT
    * _
-   * @description update an item for navigation
+   * @description update an item for section
    */
   async updateCategory({
     itemId,
-    updateNavigationDto,
+    updateSectionDto,
   }: {
     itemId: string;
-    updateNavigationDto: UpdateNavigationDto;
+    updateSectionDto: UpdateSectionDto;
   }) {
-    let sanitizedData = updateNavigationDto;
-    if (updateNavigationDto.priority) {
+    let sanitizedData = updateSectionDto;
+    if (updateSectionDto.priority) {
       sanitizedData = {
-        ...updateNavigationDto,
-        priority: Number(updateNavigationDto.priority),
+        ...updateSectionDto,
+        priority: Number(updateSectionDto.priority),
       };
     }
     return await this.update(itemId, sanitizedData);
@@ -150,7 +150,7 @@ export class NavigationService extends BaseService<'navigation'> {
   /**
    * DELETE
    * _
-   * @description delete an item for navigation
+   * @description delete an item for section
    */
   async deleteCategory({ itemId }: { itemId: string }) {
     return await this.delete(itemId);

@@ -24,10 +24,9 @@ export class BaseService<T extends keyof PrismaService> {
    * _
    * @description index all items
    */
-  async getAll(select?: any, order: 'asc' | 'desc' = 'asc') {
+  async getAll(select?: any) {
     return await (this.model as any).findMany({
       select,
-      orderBy: { priority: order }, // Utilisation du paramètre d'ordre
     });
   }
 

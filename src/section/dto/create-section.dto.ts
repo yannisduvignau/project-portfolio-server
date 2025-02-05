@@ -1,9 +1,9 @@
 import { IsBoolean, IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateNavigationDto {
+export class CreateSectionDto {
   @ApiProperty({
-    description: "Le label de l'élément de navigation.",
+    description: "Le label de l'élément de section.",
     example: 'Accueil',
   })
   @IsNotEmpty({ message: 'Le label est obligatoire.' })
@@ -11,7 +11,7 @@ export class CreateNavigationDto {
   label: string;
 
   @ApiProperty({
-    description: "Le lien vers lequel l'élément de navigation pointe.",
+    description: "Le lien vers lequel l'élément de section pointe.",
     example: '/accueil',
   })
   @IsNotEmpty({ message: 'Le lien est obligatoire.' })

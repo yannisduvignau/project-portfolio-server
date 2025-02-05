@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { seedAbout } from './seeders/aboutSeeder';
 import { seedUser } from './seeders/userSeeder';
 import { seedExperience } from './seeders/experienceSeeder';
-import { seedNavigation } from './seeders/navigationSeeder';
+import { seedSection } from './seeders/sectionSeeder';
 import { seedReview } from './seeders/reviewSeeder';
 import { seedSkill } from './seeders/skillSeeder';
 import { seedProject } from './seeders/projectSeeder';
@@ -15,7 +15,7 @@ async function main() {
   await seedAbout();
   await seedExperience();
   await seedHobby();
-  await seedNavigation();
+  await seedSection();
   await seedProject();
   await seedReview();
   await seedSkill();

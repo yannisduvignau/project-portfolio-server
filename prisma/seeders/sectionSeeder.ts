@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function seedNavigation() {
+export async function seedSection() {
   const navItems = [
     {
       label: 'Accueil',
@@ -50,13 +50,13 @@ export async function seedNavigation() {
 
   for (const item of navItems) {
     // Vérifie si un élément avec le même titre existe déjà
-    const existingItem = await prisma.navigation.findFirst({
+    const existingItem = await prisma.section.findFirst({
       where: { label: item.label },
     });
 
     // Si l'élément n'existe pas, il est créé
     if (!existingItem) {
-      await prisma.navigation.create({
+      await prisma.section.create({
         data: {
           label: item.label,
           link: item.link,
@@ -68,5 +68,5 @@ export async function seedNavigation() {
     }
   }
 
-  console.log('Seed data for Navigation items created');
+  console.log('Seed data for Section items created');
 }

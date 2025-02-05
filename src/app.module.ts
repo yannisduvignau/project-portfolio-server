@@ -6,7 +6,7 @@ import { AboutModule } from './about/about.module';
 import { ExperienceModule } from './experience/experience.module';
 import { ProjectModule } from './project/project.module';
 import { HobbyModule } from './hobby/hobby.module';
-import { NavigationModule } from './navigation/navigation.module';
+import { SectionModule } from './section/section.module';
 import { ReviewModule } from './review/review.module';
 import { SkillModule } from './skill/skill.module';
 import * as cors from 'cors';
@@ -20,7 +20,7 @@ import { SkillCategoryModule } from './skill-category/skill-category.module';
     ExperienceModule,
     ProjectModule,
     HobbyModule,
-    NavigationModule,
+    SectionModule,
     ReviewModule,
     SkillModule,
     SkillCategoryModule,
