@@ -5,9 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import { AboutModule } from './about/about.module';
 import { ExperienceModule } from './experience/experience.module';
 import { ProjectModule } from './project/project.module';
-import { PassionModule } from './passion/passion.module';
+import { HobbyModule } from './hobby/hobby.module';
 import { NavigationModule } from './navigation/navigation.module';
-import { TestimonialModule } from './testimonial/testimonial.module';
+import { ReviewModule } from './review/review.module';
 import { SkillModule } from './skill/skill.module';
 import * as cors from 'cors';
 import { SkillCategoryModule } from './skill-category/skill-category.module';
@@ -19,9 +19,9 @@ import { SkillCategoryModule } from './skill-category/skill-category.module';
     AboutModule,
     ExperienceModule,
     ProjectModule,
-    PassionModule,
+    HobbyModule,
     NavigationModule,
-    TestimonialModule,
+    ReviewModule,
     SkillModule,
     SkillCategoryModule,
     ConfigModule.forRoot({ isGlobal: true }),

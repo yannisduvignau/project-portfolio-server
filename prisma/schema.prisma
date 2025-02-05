@@ -82,7 +82,7 @@ model Hobby {
 }
 
 // ItemsNavigation
-model ItemNavigation {
+model Navigation {
   id        String   @id @default(cuid())
   label     String
   link      String
@@ -137,6 +137,7 @@ model Skill {
   description String
   stars       Int
   iconSrc     String?
+  priority    Int           @default(0)
   masqued     Boolean       @default(false)
   categoryId  String
   category    SkillCategory @relation(fields: [categoryId], references: [id])

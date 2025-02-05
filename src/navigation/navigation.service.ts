@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/base.service';
 import { PrismaService } from 'src/prisma.service';
-import { CreateItemNavigationDto } from './dto/create-item-navigation.dto';
-import { UpdateItemNavigationDto } from './dto/update-item-navigation.dto';
+import { UpdateNavigationDto } from './dto/update-navigation.dto';
+import { CreateNavigationDto } from './dto/create-navigation.dto';
 
 @Injectable()
-export class NavigationService extends BaseService<'itemNavigation'> {
+export class NavigationService extends BaseService<'navigation'> {
   constructor(prismaService: PrismaService) {
-    super(prismaService, 'itemNavigation');
+    super(prismaService, 'navigation');
   }
 
   /**
    * INDEX
    * _
+   * @description get all navigation items
    */
   async getAllNavigations() {
     return await this.getAll({
@@ -21,33 +22,29 @@ export class NavigationService extends BaseService<'itemNavigation'> {
       link: true,
       className: true,
       priority: true,
-    });
-  }
-
-  async getAllNavigationsAdmin() {
-    return await this.getAll({
-      id: true,
-      label: true,
-      link: true,
-      className: true,
-      priority: true,
-      createdAt: true,
+      masqued: true,
     });
   }
 
   /**
    * INDEX
    * _
-   * @description get all navigations
+   * @description get all navigations with pagination, search, and filters
    */
   async getNavigationsPaginate({
     page,
     pageSize,
     search,
+    filters,
   }: {
     page: number;
     pageSize: number;
-    search: string;
+    search?: string;
+    filters?: {
+      createdAt?: [Date, Date];
+      numberMin?: number;
+      numberMax?: number;
+    };
   }) {
     const searchCondition = search
       ? {
@@ -58,6 +55,39 @@ export class NavigationService extends BaseService<'itemNavigation'> {
           ],
         }
       : {};
+
+    const filtersObject =
+      typeof filters === 'string' ? JSON.parse(filters) : filters;
+
+    // Build filters condition
+    const filtersCondition = filtersObject
+      ? {
+          AND: [
+            filtersObject.createdAt
+              ? {
+                  createdAt: {
+                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
+                    lte: filtersObject.createdAt[1], // Less than or equal to end date
+                  },
+                }
+              : null,
+            filtersObject.numberMin || filtersObject.numberMax
+              ? {
+                  number: {
+                    ...(filtersObject.numberMin && {
+                      gte: filtersObject.numberMin,
+                    }),
+                    ...(filtersObject.numberMax && {
+                      lte: filtersObject.numberMax,
+                    }),
+                  },
+                }
+              : null,
+          ].filter(Boolean),
+          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
+        }
+      : {};
+
     return await this.getAllPaginate(
       page,
       pageSize,
@@ -67,54 +97,60 @@ export class NavigationService extends BaseService<'itemNavigation'> {
         link: true,
         className: true,
         priority: true,
+        masqued: true,
         createdAt: true,
       },
-      searchCondition,
+      {
+        AND: [searchCondition, filtersCondition].filter(
+          (condition) => Object.keys(condition).length > 0,
+        ),
+      },
     );
   }
 
   /**
-   * SHOW
+   * POST
    * _
+   * @description create an item for navigation
    */
-  async getNavigationById({ itemId }: { itemId: string }) {
-    return await this.getById(itemId, {
-      id: true,
-      label: true,
-      link: true,
-      className: true,
-    });
-  }
-
-  /**
-   * CREATE
-   * _
-   */
-  async createItemNavigation({
-    createItemNavigationDto,
+  async createNavigation({
+    createNavigationDto,
   }: {
-    createItemNavigationDto: CreateItemNavigationDto;
+    createNavigationDto: CreateNavigationDto;
   }) {
-    return await this.create(createItemNavigationDto);
+    const sanitizedData = {
+      ...createNavigationDto,
+      priority: Number(createNavigationDto.priority),
+    };
+    return await this.create(sanitizedData);
   }
 
   /**
-   * UPDATE
+   * PUT
    * _
+   * @description update an item for navigation
    */
   async updateCategory({
     itemId,
-    updateItemNavigationDto,
+    updateNavigationDto,
   }: {
     itemId: string;
-    updateItemNavigationDto: UpdateItemNavigationDto;
+    updateNavigationDto: UpdateNavigationDto;
   }) {
-    return await this.update(itemId, updateItemNavigationDto);
+    let sanitizedData = updateNavigationDto;
+    if (updateNavigationDto.priority) {
+      sanitizedData = {
+        ...updateNavigationDto,
+        priority: Number(updateNavigationDto.priority),
+      };
+    }
+    return await this.update(itemId, sanitizedData);
   }
 
   /**
    * DELETE
    * _
+   * @description delete an item for navigation
    */
   async deleteCategory({ itemId }: { itemId: string }) {
     return await this.delete(itemId);

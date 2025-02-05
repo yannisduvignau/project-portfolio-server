@@ -28,7 +28,7 @@ export class UserController {
    * INDEX
    * _
    * @description index all users
-   * @road localhost:3000/users
+   * @route localhost:3000/users
    * @returns http resources
    */
   @Get()
@@ -42,7 +42,7 @@ export class UserController {
    * INDEX
    * _
    * @description index all users
-   * @road localhost:3000/users
+   * @route localhost:3000/users
    * @returns http resources
    */
   @Get('/admin')
@@ -54,7 +54,7 @@ export class UserController {
    * INDEX
    * _
    * @description index all users with pagination
-   * @route GET /users/paginate?page={page}
+   * @route GET /users/paginate?page={page}&pageSize={pageSize}&search={search}
    * @returns http resources
    */
   @Get('/paginate')
@@ -70,7 +70,7 @@ export class UserController {
       return await this.userService.getUsersPaginate({
         page: pageNumber,
         pageSize: pageSizeNumber,
-        search: search || '', // Recherche vide par défaut
+        search: search || '',
       });
     } catch (error) {
       console.error('Error fetching paginated skills:', error.message);
@@ -85,7 +85,7 @@ export class UserController {
    * SHOW
    * _
    * @description index one user (by ID)
-   * @road localhost:3000/users/{id}
+   * @route localhost:3000/users/{id}
    * @returns http resources
    */
   @Get('/:userId')
@@ -97,7 +97,7 @@ export class UserController {
    * POST
    * _
    * @description create a user
-   * @road localhost:3000/users
+   * @route localhost:3000/users
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
@@ -112,7 +112,7 @@ export class UserController {
    * PUT
    * _
    * @description update a user
-   * @road localhost:3000/users/{id}
+   * @route localhost:3000/users/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
@@ -131,7 +131,7 @@ export class UserController {
    * DELETE
    * _
    * @description delete a user
-   * @road localhost:3000/users/{id}
+   * @route localhost:3000/users/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)

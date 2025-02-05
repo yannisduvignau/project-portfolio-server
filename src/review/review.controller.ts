@@ -13,14 +13,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ReviewService } from './review.service';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import * as fs from 'fs';
-import { ProjectService } from './project.service';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -37,40 +37,40 @@ if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
-@ApiTags('projects')
-@Controller('projects')
-export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+@ApiTags('reviews')
+@Controller('reviews')
+export class ReviewController {
+  constructor(private readonly reviewService: ReviewService) {}
 
   /**
    * INDEX
    * _
-   * @description index all projects
-   * @route GET /projects
+   * @description index all reviews
+   * @route GET /reviews
    * @returns http resources
    */
   @Get()
-  @ApiOperation({ summary: 'Get all projects' })
-  @ApiResponse({ status: 200, description: 'Get all projects successfully' })
-  @ApiNotFoundResponse({ description: 'No projects found' })
-  async getProjects() {
-    return await this.projectService.getProjects();
+  @ApiOperation({ summary: 'Get all reviews' })
+  @ApiResponse({ status: 200, description: 'Get all reviews successfully' })
+  @ApiNotFoundResponse({ description: 'No reviews found' })
+  async getReviews() {
+    return await this.reviewService.getReviews();
   }
 
   /**
    * INDEX
    * _
-   * @description index all projects with pagination
-   * @route GET /projects/paginate?page={page}&pageSize={pageSize}&search={search}
+   * @description index all reviews with pagination
+   * @route GET /reviews/paginate?page={page}&pageSize={pageSize}&search={search}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
   @Get('/paginate')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all projects' })
-  @ApiResponse({ status: 200, description: 'Get all projects successfully' })
-  @ApiNotFoundResponse({ description: 'No projects found' })
-  async getProjectsPaginate(
+  @ApiOperation({ summary: 'Get all reviews' })
+  @ApiResponse({ status: 200, description: 'Get all reviews successfully' })
+  @ApiNotFoundResponse({ description: 'No reviews found' })
+  async getReviewsPaginate(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('filters')
@@ -85,16 +85,16 @@ export class ProjectController {
     const pageSizeNumber = parseInt(pageSize || '5', 10); // Défaut: 5
 
     try {
-      return await this.projectService.getProjectsPaginate({
+      return await this.reviewService.getReviewsPaginate({
         page: pageNumber,
         pageSize: pageSizeNumber,
         search: search || '',
         filters: filters || {},
       });
     } catch (error) {
-      console.error('Error fetching paginated projects:', error.message);
+      console.error('Error fetching paginated reviews:', error.message);
       throw new HttpException(
-        'Erreur lors de la récupération des projets',
+        'Erreur lors de la récupération des testimoniaux',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -103,16 +103,16 @@ export class ProjectController {
   /**
    * POST
    * _
-   * @description create a project
-   * @route POST /projects
+   * @description create a review
+   * @route POST /reviews
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create an project' })
+  @ApiOperation({ summary: 'Create a review' })
   @ApiCreatedResponse({
-    description: 'The project has been successfully created.',
+    description: 'The review has been successfully created.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   @UseInterceptors(
@@ -126,15 +126,15 @@ export class ProjectController {
       }),
     }),
   )
-  async createProject(
-    @Body() createProjectDto: CreateProjectDto,
+  async createReview(
+    @Body() createReviewDto: CreateReviewDto,
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<Observable<CreateProjectDto>> {
+  ): Promise<Observable<CreateReviewDto>> {
     if (!file) {
-      return await this.projectService.createProject({
-        createProjectDto: {
-          ...createProjectDto,
-          imgSrc: '/src/assets/placeholder.webp',
+      return await this.reviewService.createReview({
+        createReviewDto: {
+          ...createReviewDto,
+          imgSrc: '/src/assets/defaultAvatar.png',
         },
       });
       //throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
@@ -142,24 +142,24 @@ export class ProjectController {
 
     const imagePath = `/src/assets/${file.filename}`;
 
-    return await this.projectService.createProject({
-      createProjectDto: { ...createProjectDto, imgSrc: imagePath },
+    return await this.reviewService.createReview({
+      createReviewDto: { ...createReviewDto, imgSrc: imagePath },
     });
   }
 
   /**
    * PUT
    * _
-   * @description update a project
-   * @route PUT /projects/{id}
+   * @description update a review
+   * @route PUT /reviews/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
-  @Put('/:projectId')
+  @Put('/:reviewId')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update an project' })
+  @ApiOperation({ summary: 'Update a review' })
   @ApiCreatedResponse({
-    description: 'The project has been successfully updated.',
+    description: 'The review has been successfully updated.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   @UseInterceptors(
@@ -173,14 +173,14 @@ export class ProjectController {
       }),
     }),
   )
-  async updateProject(
-    @Param('projectId') projectId: string,
-    @Body() updateProjectDto: UpdateProjectDto,
+  async updateReview(
+    @Param('reviewId') reviewId: string,
+    @Body() updateReviewDto: UpdateReviewDto,
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<Observable<UpdateProjectDto>> {
+  ): Promise<Observable<UpdateReviewDto>> {
     // Récupérer le témoignage actuel pour obtenir l'ancienne image (si elle existe)
-    const existingProject = await this.projectService.getProjectById({
-      projectId,
+    const existingReview = await this.reviewService.getReviewByID({
+      reviewId,
     });
 
     if (file) {
@@ -189,10 +189,10 @@ export class ProjectController {
 
       // Supprimer l'ancienne image si elle existe
       if (
-        existingProject.imgSrc &&
-        existingProject.imgSrc !== '/src/assets/defaultAvatar.png'
+        existingReview.imgSrc &&
+        existingReview.imgSrc !== '/src/assets/defaultAvatar.png'
       ) {
-        const oldImagePath = `.${existingProject.imgSrc}`;
+        const oldImagePath = `.${existingReview.imgSrc}`;
         try {
           // Vérifier si le fichier existe avant de tenter de le supprimer
           if (fs.existsSync(oldImagePath)) {
@@ -202,37 +202,38 @@ export class ProjectController {
           console.error('Error deleting old image:', error);
         }
       }
-      return await this.projectService.updateProject({
-        projectId,
-        updateProjectDto: {
-          ...updateProjectDto,
+      return await this.reviewService.updateReview({
+        reviewId,
+        updateReviewDto: {
+          ...updateReviewDto,
           imgSrc: updatedImgSrc,
         },
       });
     }
 
-    return await this.projectService.updateProject({
-      projectId,
-      updateProjectDto,
+    // Mettre à jour le témoignage avec la nouvelle image (ou l'ancienne si aucun fichier n'a été téléchargé)
+    return await this.reviewService.updateReview({
+      reviewId,
+      updateReviewDto,
     });
   }
 
   /**
    * DELETE
    * _
-   * @description delete a project
-   * @route DELETE /projects/{id}
+   * @description delete a review
+   * @route DELETE /reviews/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
-  @Delete('/:projectId')
+  @Delete('/:reviewId')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete an project' })
+  @ApiOperation({ summary: 'Delete a review' })
   @ApiCreatedResponse({
-    description: 'The project has been successfully deleted.',
+    description: 'The review has been successfully deleted.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async deleteProject(@Param('projectId') projectId: string) {
-    return await this.projectService.deleteProject({ projectId });
+  async deleteReview(@Param('reviewId') reviewId: string) {
+    return await this.reviewService.deleteReview({ reviewId });
   }
 }

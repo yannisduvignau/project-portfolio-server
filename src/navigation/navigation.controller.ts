@@ -12,47 +12,62 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { NavigationService } from './navigation.service';
-import { CreateItemNavigationDto } from './dto/create-item-navigation.dto';
-import { UpdateItemNavigationDto } from './dto/update-item-navigation.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Observable } from 'rxjs';
+import { CreateNavigationDto } from './dto/create-navigation.dto';
+import { UpdateNavigationDto } from './dto/update-navigation.dto';
 
-@ApiTags('item-navigations')
-@Controller('item-navigations')
+@ApiTags('navigations')
+@Controller('navigations')
 export class NavigationController {
   constructor(private readonly navigationService: NavigationService) {}
 
   /**
    * INDEX
-   * @road localhost:3000/item-navigations
+   * _
+   * @description index all navigations
+   * @route GET /navigations
    * @returns http resources
    */
   @Get()
+  @ApiOperation({ summary: 'Get all navigations' })
+  @ApiResponse({ status: 200, description: 'Get all navigations successfully' })
+  @ApiNotFoundResponse({ description: 'No navigations found' })
   async getNavigations() {
     return await this.navigationService.getAllNavigations();
   }
 
   /**
    * INDEX
-   * @road localhost:3000/item-navigations
-   * @returns http resources
-   */
-  @Get('/admin')
-  async getNavigationsAdmin() {
-    return await this.navigationService.getAllNavigationsAdmin();
-  }
-
-  /**
-   * INDEX
    * _
-   * @description index all item-navigations with pagination
-   * @route GET /item-navigations/paginate?page={page}
+   * @description index all navigations with pagination
+   * @route GET /navigations/paginate?page={page}&pageSize={pageSize}&search={search}
    * @returns http resources
    */
+  @UseGuards(JwtAuthGuard)
   @Get('/paginate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all navigations' })
+  @ApiResponse({ status: 200, description: 'Get all navigations successfully' })
+  @ApiNotFoundResponse({ description: 'No navigations found' })
   async getNavigationsPaginate(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('filters')
+    filters?: {
+      createdAt?: [Date, Date];
+      numberMin?: number;
+      numberMax?: number;
+    },
     @Query('search') search?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10); // Défaut: page 1
@@ -62,66 +77,81 @@ export class NavigationController {
       return await this.navigationService.getNavigationsPaginate({
         page: pageNumber,
         pageSize: pageSizeNumber,
-        search: search || '', // Recherche vide par défaut
+        search: search || '',
+        filters: filters || {},
       });
     } catch (error) {
-      console.error('Error fetching paginated skills:', error.message);
+      console.error('Error fetching paginated navigations:', error.message);
       throw new HttpException(
-        'Erreur lors de la récupération des compétences',
+        'Erreur lors de la récupération des onglets de navigation',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * SHOW
-   * @road localhost:3000/item-navigations/{id}
-   * @returns http resources
-   */
-  @Get('/:navigationId')
-  async getNavigationById(@Param('navigationId') itemId: string) {
-    return await this.navigationService.getNavigationById({ itemId });
-  }
-
-  /**
    * POST
-   * @road localhost:3000/item-navigations
+   * _
+   * @description create a navigation
+   * @route POST /navigations
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createItemNavigation(
-    @Body() createItemNavigationDto: CreateItemNavigationDto,
-  ) {
-    return this.navigationService.createItemNavigation({
-      createItemNavigationDto,
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a navigation' })
+  @ApiCreatedResponse({
+    description: 'The navigation has been successfully created.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  async createNavigation(
+    @Body() createNavigationDto: CreateNavigationDto,
+  ): Promise<Observable<CreateNavigationDto>> {
+    return this.navigationService.createNavigation({
+      createNavigationDto,
     });
   }
 
   /**
    * PUT
-   * @road localhost:3000/item-navigations/{id}
+   * _
+   * @description update a navigation
+   * @route PUT /navigations/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
   @Put('/:itemId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a navigation' })
+  @ApiCreatedResponse({
+    description: 'The navigation has been successfully updated.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async updateCategory(
     @Param('itemId') itemId: string,
-    @Body() updateItemNavigationDto: UpdateItemNavigationDto,
-  ) {
+    @Body() updateNavigationDto: UpdateNavigationDto,
+  ): Promise<Observable<UpdateNavigationDto>> {
     return this.navigationService.updateCategory({
       itemId,
-      updateItemNavigationDto,
+      updateNavigationDto,
     });
   }
 
   /**
    * DELETE
-   * @road localhost:3000/item-navigations/{id}
+   * _
+   * @description delete a navigation
+   * @route DELETE /navigations/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Delete('/:itemId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a navigation' })
+  @ApiCreatedResponse({
+    description: 'The navigation has been successfully deleted.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async deleteCategory(@Param('itemId') itemId: string) {
     return this.navigationService.deleteCategory({ itemId });
   }

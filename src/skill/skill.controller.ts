@@ -21,7 +21,16 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import * as fs from 'fs';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Observable } from 'rxjs';
 
 const uploadPath = '../front/src/assets'; // Replace '/src/assets'
 if (!fs.existsSync(uploadPath)) {
@@ -37,24 +46,15 @@ export class SkillController {
    * INDEX
    * _
    * @description index all skills
-   * @road localhost:3000/skills
+   * @route GET /skills
    * @returns http resources
    */
   @Get()
+  @ApiOperation({ summary: 'Get all skills' })
+  @ApiResponse({ status: 200, description: 'Get all skills successfully' })
+  @ApiNotFoundResponse({ description: 'No skills found' })
   async getSkills() {
     return await this.skillService.getSkills();
-  }
-
-  /**
-   * INDEX
-   * _
-   * @description index all skills
-   * @road localhost:3000/skills
-   * @returns http resources
-   */
-  @Get('/admin')
-  async getSkillsAdmin() {
-    return await this.skillService.getSkillsAdmin();
   }
 
   /**
@@ -64,10 +64,21 @@ export class SkillController {
    * @route GET /skills/paginate?page={page}&pageSize={pageSize}&search={search}
    * @returns http resources
    */
+  @UseGuards(JwtAuthGuard)
   @Get('/paginate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all skills' })
+  @ApiResponse({ status: 200, description: 'Get all skills successfully' })
+  @ApiNotFoundResponse({ description: 'No skills found' })
   async getSkillsPaginate(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('filters')
+    filters?: {
+      createdAt?: [Date, Date];
+      numberMin?: number;
+      numberMax?: number;
+    },
     @Query('search') search?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10); // Défaut: page 1
@@ -77,7 +88,8 @@ export class SkillController {
       return await this.skillService.getSkillsPaginate({
         page: pageNumber,
         pageSize: pageSizeNumber,
-        search: search || '', // Recherche vide par défaut
+        search: search || '',
+        filters: filters || {},
       });
     } catch (error) {
       console.error('Error fetching paginated skills:', error.message);
@@ -89,26 +101,20 @@ export class SkillController {
   }
 
   /**
-   * SHOW
-   * _
-   * @description index one skill (by ID)
-   * @road localhost:3000/skills/{id}
-   * @returns http resources
-   */
-  @Get('/:skillId')
-  async getSkillByID(@Param('skillId') skillId: string) {
-    return await this.skillService.getSkillById({ skillId });
-  }
-
-  /**
    * POST
    * _
    * @description create a skill
-   * @road localhost:3000/skills
+   * @route POST /skills
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Post()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a skill' })
+  @ApiCreatedResponse({
+    description: 'The skill has been successfully created.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -123,7 +129,7 @@ export class SkillController {
   async createSkill(
     @Body() createSkillDto: CreateSkillDto,
     @UploadedFile() file: Express.Multer.File,
-  ) {
+  ): Promise<Observable<CreateSkillDto>> {
     if (!file) {
       return this.skillService.createSkill({
         createSkillDto: {
@@ -145,11 +151,17 @@ export class SkillController {
    * PUT
    * _
    * @description update a skill
-   * @road localhost:3000/skills/{id}
+   * @route PUT /skills/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
   @Put('/:skillId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a skill' })
+  @ApiCreatedResponse({
+    description: 'The skill has been successfully updated.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -165,9 +177,9 @@ export class SkillController {
     @Param('skillId') skillId: string,
     @Body() updateSkillDto: UpdateSkillDto,
     @UploadedFile() file: Express.Multer.File,
-  ) {
+  ): Promise<Observable<UpdateSkillDto>> {
     // Récupérer le témoignage actuel pour obtenir l'ancienne image (si elle existe)
-    const existingTestimonial = await this.skillService.getSkillById({
+    const existingReview = await this.skillService.getSkillById({
       skillId,
     });
 
@@ -177,10 +189,10 @@ export class SkillController {
 
       // Supprimer l'ancienne image si elle existe
       if (
-        existingTestimonial.iconSrc &&
-        existingTestimonial.iconSrc !== '/src/assets/defaultAvatar.png'
+        existingReview.iconSrc &&
+        existingReview.iconSrc !== '/src/assets/defaultAvatar.png'
       ) {
-        const oldImagePath = `.${existingTestimonial.iconSrc}`;
+        const oldImagePath = `.${existingReview.iconSrc}`;
         try {
           // Vérifier si le fichier existe avant de tenter de le supprimer
           if (fs.existsSync(oldImagePath)) {
@@ -205,11 +217,17 @@ export class SkillController {
    * DELETE
    * _
    * @description delete a skill
-   * @road localhost:3000/skills/{id}
+   * @route DELETE /skills/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
   @Delete('/:skillId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a skill' })
+  @ApiCreatedResponse({
+    description: 'The skill has been successfully deleted.',
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   async deleteSkill(@Param('skillId') skillId: string) {
     return await this.skillService.deleteSkill({ skillId });
   }

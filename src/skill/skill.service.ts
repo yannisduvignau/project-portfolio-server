@@ -23,40 +23,30 @@ export class SkillService extends BaseService<'skill'> {
       stars: true,
       iconSrc: true,
       categoryId: true,
+      priority: true,
+      masqued: true,
     });
   }
 
   /**
    * INDEX
    * _
-   * @description get all skills
-   */
-  async getSkillsAdmin() {
-    return await this.getAll({
-      id: true,
-      label: true,
-      description: true,
-      stars: true,
-      iconSrc: true,
-      categoryId: true,
-      category: true,
-      createdAt: true,
-    });
-  }
-
-  /**
-   * INDEX
-   * _
-   * @description get all skills
+   * @description get all skills with pagination, search, and filters
    */
   async getSkillsPaginate({
     page,
     pageSize,
     search,
+    filters,
   }: {
     page: number;
     pageSize: number;
-    search: string;
+    search?: string;
+    filters?: {
+      createdAt?: [Date, Date];
+      numberMin?: number;
+      numberMax?: number;
+    };
   }) {
     const searchCondition = search
       ? {
@@ -64,6 +54,38 @@ export class SkillService extends BaseService<'skill'> {
             { label: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
             { description: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
           ],
+        }
+      : {};
+
+    const filtersObject =
+      typeof filters === 'string' ? JSON.parse(filters) : filters;
+
+    // Build filters condition
+    const filtersCondition = filtersObject
+      ? {
+          AND: [
+            filtersObject.createdAt
+              ? {
+                  createdAt: {
+                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
+                    lte: filtersObject.createdAt[1], // Less than or equal to end date
+                  },
+                }
+              : null,
+            filtersObject.numberMin || filtersObject.numberMax
+              ? {
+                  number: {
+                    ...(filtersObject.numberMin && {
+                      gte: filtersObject.numberMin,
+                    }),
+                    ...(filtersObject.numberMax && {
+                      lte: filtersObject.numberMax,
+                    }),
+                  },
+                }
+              : null,
+          ].filter(Boolean),
+          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
         }
       : {};
 
@@ -78,9 +100,15 @@ export class SkillService extends BaseService<'skill'> {
         iconSrc: true,
         categoryId: true,
         category: true,
+        priority: true,
+        masqued: true,
         createdAt: true,
       },
-      searchCondition,
+      {
+        AND: [searchCondition, filtersCondition].filter(
+          (condition) => Object.keys(condition).length > 0,
+        ),
+      },
     );
   }
 
@@ -106,10 +134,10 @@ export class SkillService extends BaseService<'skill'> {
    * @description create a skill
    */
   async createSkill({ createSkillDto }: { createSkillDto: CreateSkillDto }) {
-    // Convertir explicitement la notation en un entier
     const sanitizedData = {
       ...createSkillDto,
-      stars: Number(createSkillDto.stars), // Conversion forcée en entier
+      stars: Number(createSkillDto.stars),
+      priority: Number(createSkillDto.priority),
     };
     return await this.create(sanitizedData);
   }
@@ -126,12 +154,13 @@ export class SkillService extends BaseService<'skill'> {
     skillId: string;
     updateSkillDto: UpdateSkillDto;
   }) {
-    let sanitizedData = updateSkillDto;
-    if (updateSkillDto.stars) {
-      sanitizedData = {
-        ...updateSkillDto,
-        stars: Number(updateSkillDto.stars), // Conversion forcée en entier
-      };
+    const sanitizedData = { ...updateSkillDto };
+
+    if (updateSkillDto.stars !== undefined) {
+      sanitizedData.stars = Number(updateSkillDto.stars);
+    }
+    if (updateSkillDto.priority !== undefined) {
+      sanitizedData.priority = Number(updateSkillDto.priority);
     }
     return await this.update(skillId, sanitizedData);
   }

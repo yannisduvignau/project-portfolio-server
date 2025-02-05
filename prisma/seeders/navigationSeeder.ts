@@ -50,13 +50,13 @@ export async function seedNavigation() {
 
   for (const item of navItems) {
     // Vérifie si un élément avec le même titre existe déjà
-    const existingItem = await prisma.itemNavigation.findFirst({
+    const existingItem = await prisma.navigation.findFirst({
       where: { label: item.label },
     });
 
     // Si l'élément n'existe pas, il est créé
     if (!existingItem) {
-      await prisma.itemNavigation.create({
+      await prisma.navigation.create({
         data: {
           label: item.label,
           link: item.link,

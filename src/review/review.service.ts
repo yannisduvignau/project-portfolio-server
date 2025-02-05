@@ -1,36 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { CreateAboutDto } from './dto/create-about.dto';
-import { UpdateAboutDto } from './dto/update-about.dto';
 import { BaseService } from 'src/base.service';
+import { PrismaService } from 'src/prisma.service';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
 
 @Injectable()
-export class AboutService extends BaseService<'about'> {
+export class ReviewService extends BaseService<'review'> {
   constructor(prismaService: PrismaService) {
-    super(prismaService, 'about');
+    super(prismaService, 'review');
   }
 
   /**
    * INDEX
    * _
-   * @description get all abouts ref
+   * @description get all reviews
    */
-  async getAbouts() {
-    return await this.getAllOrderByPriority({
+  async getReviews() {
+    return await this.getAll({
       id: true,
-      label: true,
-      number: true,
+      content: true,
+      imgSrc: true,
+      name: true,
+      company: true,
       priority: true,
       masqued: true,
     });
   }
 
   /**
+   * SHOW
+   * _
+   * @description get one review
+   */
+  async getReviewByID({ reviewId }: { reviewId: string }) {
+    return await this.getById(reviewId, {
+      id: true,
+      content: true,
+      imgSrc: true,
+      name: true,
+      compagny: true,
+    });
+  }
+
+  /**
    * INDEX
    * _
-   * @description Get all abouts with pagination, search, and filters
+   * @description get all reviews
    */
-  async getAboutsPaginate({
+  async getReviewsPaginate({
     page,
     pageSize,
     search,
@@ -38,18 +55,19 @@ export class AboutService extends BaseService<'about'> {
   }: {
     page: number;
     pageSize: number;
-    search?: string; // Made optional
+    search?: string;
     filters?: {
       createdAt?: [Date, Date];
       numberMin?: number;
       numberMax?: number;
     };
   }) {
-    // Build search condition
     const searchCondition = search
       ? {
           OR: [
-            { label: { contains: search, mode: 'insensitive' } }, // Search by label (case-insensitive)
+            { content: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
+            { name: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
+            { company: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
           ],
         }
       : {};
@@ -91,8 +109,11 @@ export class AboutService extends BaseService<'about'> {
       pageSize,
       {
         id: true,
-        label: true,
-        number: true,
+        content: true,
+        imgSrc: true,
+        name: true,
+        company: true,
+        stars: true,
         priority: true,
         masqued: true,
         createdAt: true,
@@ -108,44 +129,51 @@ export class AboutService extends BaseService<'about'> {
   /**
    * POST
    * _
-   * @description create an about ref
+   * @description create a review
    */
-  async createAbout({ createAboutDto }: { createAboutDto: CreateAboutDto }) {
+  async createReview({
+    createReviewDto,
+  }: {
+    createReviewDto: CreateReviewDto;
+  }) {
     const sanitizedData = {
-      ...createAboutDto,
-      priority: Number(createAboutDto.priority),
+      ...createReviewDto,
+      stars: Number(createReviewDto.stars),
+      priority: Number(createReviewDto.priority),
     };
+
     return await this.create(sanitizedData);
   }
 
   /**
    * PUT
-   * _
-   * @description update an about ref
+   * @description Update a review
    */
-  async updateAbout({
-    aboutId,
-    updateAboutDto,
+  async updateReview({
+    reviewId,
+    updateReviewDto,
   }: {
-    aboutId: string;
-    updateAboutDto: UpdateAboutDto;
+    reviewId: string;
+    updateReviewDto: UpdateReviewDto;
   }) {
-    let sanitizedData = updateAboutDto;
-    if (updateAboutDto.priority) {
-      sanitizedData = {
-        ...updateAboutDto,
-        priority: Number(updateAboutDto.priority),
-      };
+    const sanitizedData = { ...updateReviewDto };
+
+    if (updateReviewDto.stars !== undefined) {
+      sanitizedData.stars = Number(updateReviewDto.stars);
     }
-    return await this.update(aboutId, sanitizedData);
+    if (updateReviewDto.priority !== undefined) {
+      sanitizedData.priority = Number(updateReviewDto.priority);
+    }
+
+    return await this.update(reviewId, sanitizedData);
   }
 
   /**
    * DELETE
    * _
-   * @description delete an about ref
+   * @description delete a review
    */
-  async deleteAbout({ aboutId }: { aboutId: string }) {
-    return await this.delete(aboutId);
+  async deleteReview({ reviewId }: { reviewId: string }) {
+    return await this.delete(reviewId);
   }
 }

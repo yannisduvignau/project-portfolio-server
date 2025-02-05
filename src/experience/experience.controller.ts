@@ -50,7 +50,7 @@ export class ExperienceController {
    * INDEX
    * _
    * @description index all experiences with pagination
-   * @route GET /experiences/paginate?page={page}
+   * @route GET /experiences/paginate?page={page}&pageSize={pageSize}&search={search}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
@@ -75,8 +75,8 @@ export class ExperienceController {
       return await this.experienceService.getExperiencesPaginate({
         page: pageNumber,
         pageSize: pageSizeNumber,
-        search: search || '', // Recherche vide par défaut
-        filters: filters || {}, // Recherche vide par défaut
+        search: search || '',
+        filters: filters || {},
       });
     } catch (error) {
       console.error('Error fetching paginated experiences:', error.message);
@@ -139,7 +139,7 @@ export class ExperienceController {
    * DELETE
    * _
    * @description delete an experience
-   * @road localhost:3000/experiences/{id}
+   * @route localhost:3000/experiences/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)

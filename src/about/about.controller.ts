@@ -50,7 +50,7 @@ export class AboutController {
    * INDEX
    * _
    * @description index all abouts with pagination
-   * @route GET /abouts/paginate?page={page}
+   * @route GET /abouts/paginate?page={page}&pageSize={pageSize}&search={search}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
@@ -77,8 +77,8 @@ export class AboutController {
       return await this.aboutService.getAboutsPaginate({
         page: pageNumber,
         pageSize: pageSizeNumber,
-        search: search || '', // Recherche vide par défaut
-        filters: filters || {}, // Recherche vide par défaut
+        search: search || '',
+        filters: filters || {},
       });
     } catch (error) {
       console.error('Error fetching paginated abouts:', error.message);
@@ -93,7 +93,7 @@ export class AboutController {
    * POST
    * _
    * @description create an about ref
-   * @route GET /abouts
+   * @route POST /abouts
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)
@@ -114,7 +114,7 @@ export class AboutController {
    * PUT
    * _
    * @description update an about ref
-   * @route GET /abouts/{id}
+   * @route PUT /abouts/{id}
    * @returns http resources
    */
   @UseGuards(JwtAuthGuard)
@@ -136,7 +136,7 @@ export class AboutController {
    * DELETE
    * _
    * @description delete an about ref
-   * @route GET /abouts/{id}
+   * @route DELETE /abouts/{id}
    * @returns http response
    */
   @UseGuards(JwtAuthGuard)

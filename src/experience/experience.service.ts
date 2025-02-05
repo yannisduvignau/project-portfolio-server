@@ -23,6 +23,7 @@ export class ExperienceService extends BaseService<'experience'> {
       location: true,
       description: true,
       priority: true,
+      masqued: true,
     });
   }
 
@@ -42,7 +43,7 @@ export class ExperienceService extends BaseService<'experience'> {
     search: string;
     filters?: {
       createdAt?: [Date, Date];
-    }; // Refined filters type
+    };
   }) {
     const searchCondition = search
       ? {
@@ -85,12 +86,13 @@ export class ExperienceService extends BaseService<'experience'> {
         location: true,
         description: true,
         priority: true,
+        masqued: true,
         createdAt: true,
       },
       {
         AND: [searchCondition, filtersCondition].filter(
           (condition) => Object.keys(condition).length > 0,
-        ), // Combine conditions
+        ),
       },
     );
   }
@@ -105,7 +107,11 @@ export class ExperienceService extends BaseService<'experience'> {
   }: {
     createExperienceDto: CreateExperienceDto;
   }) {
-    return await this.create(createExperienceDto);
+    const sanitizedData = {
+      ...createExperienceDto,
+      priority: Number(createExperienceDto.priority),
+    };
+    return await this.create(sanitizedData);
   }
 
   /**
@@ -120,7 +126,14 @@ export class ExperienceService extends BaseService<'experience'> {
     experienceId: string;
     updateExperienceDto: UpdateExperienceDto;
   }) {
-    return await this.update(experienceId, updateExperienceDto);
+    let sanitizedData = updateExperienceDto;
+    if (updateExperienceDto.priority) {
+      sanitizedData = {
+        ...updateExperienceDto,
+        priority: Number(updateExperienceDto.priority),
+      };
+    }
+    return await this.update(experienceId, sanitizedData);
   }
 
   /**

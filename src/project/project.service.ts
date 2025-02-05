@@ -23,23 +23,7 @@ export class ProjectService extends BaseService<'project'> {
       projectLink: true,
       tags: true,
       priority: true,
-    });
-  }
-
-  /**
-   * INDEX
-   * _
-   * @description get all projects
-   */
-  async getProjectsAdmin() {
-    return await this.getAll({
-      id: true,
-      titre: true,
-      imgSrc: true,
-      projectLink: true,
-      tags: true,
-      priority: true,
-      createdAt: true,
+      masqued: true,
     });
   }
 
@@ -52,10 +36,16 @@ export class ProjectService extends BaseService<'project'> {
     page,
     pageSize,
     search,
+    filters,
   }: {
     page: number;
     pageSize: number;
-    search: string;
+    search?: string;
+    filters?: {
+      createdAt?: [Date, Date];
+      numberMin?: number;
+      numberMax?: number;
+    };
   }) {
     const searchCondition = search
       ? {
@@ -65,6 +55,39 @@ export class ProjectService extends BaseService<'project'> {
           ],
         }
       : {};
+
+    const filtersObject =
+      typeof filters === 'string' ? JSON.parse(filters) : filters;
+
+    // Build filters condition
+    const filtersCondition = filtersObject
+      ? {
+          AND: [
+            filtersObject.createdAt
+              ? {
+                  createdAt: {
+                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
+                    lte: filtersObject.createdAt[1], // Less than or equal to end date
+                  },
+                }
+              : null,
+            filtersObject.numberMin || filtersObject.numberMax
+              ? {
+                  number: {
+                    ...(filtersObject.numberMin && {
+                      gte: filtersObject.numberMin,
+                    }),
+                    ...(filtersObject.numberMax && {
+                      lte: filtersObject.numberMax,
+                    }),
+                  },
+                }
+              : null,
+          ].filter(Boolean),
+          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
+        }
+      : {};
+
     return await this.getAllPaginate(
       page,
       pageSize,
@@ -75,9 +98,14 @@ export class ProjectService extends BaseService<'project'> {
         projectLink: true,
         tags: true,
         priority: true,
+        masqued: true,
         createdAt: true,
       },
-      searchCondition,
+      {
+        AND: [searchCondition, filtersCondition].filter(
+          (condition) => Object.keys(condition).length > 0,
+        ),
+      },
     );
   }
 
@@ -108,7 +136,7 @@ export class ProjectService extends BaseService<'project'> {
   }) {
     const sanitizedData = {
       ...createProjectDto,
-      priority: Number(createProjectDto.priority), // Conversion forcée en entier
+      priority: Number(createProjectDto.priority),
     };
     return await this.create(sanitizedData);
   }
@@ -129,7 +157,7 @@ export class ProjectService extends BaseService<'project'> {
     if (updateProjectDto.priority) {
       sanitizedData = {
         ...updateProjectDto,
-        priority: Number(updateProjectDto.priority), // Conversion forcée en entier
+        priority: Number(updateProjectDto.priority),
       };
     }
     return await this.update(projectId, sanitizedData);

@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreatePassionDto {
+export class CreateHobbyDto {
   @ApiProperty({
-    description: 'Le titre de la passion.',
+    description: 'Le titre de la hobby.',
     example: 'Programmation',
   })
   @IsNotEmpty({ message: 'Le titre est obligatoire.' })
@@ -11,7 +11,7 @@ export class CreatePassionDto {
   titre: string;
 
   @ApiProperty({
-    description: 'Un emoji représentant la passion.',
+    description: 'Un emoji représentant la hobby.',
     example: '💻',
   })
   @IsNotEmpty({ message: "L'emoji est obligatoire." })
@@ -39,4 +39,12 @@ export class CreatePassionDto {
     { message: 'Le positionnement relatif gauche doit être un nombre.' },
   )
   left: number;
+
+  @ApiProperty({
+    description: 'La visibilité pour l’affichage.',
+    example: 1,
+  })
+  @IsNotEmpty({ message: 'La visibilité est obligatoire.' })
+  @IsBoolean({ message: 'La visibilité doit être un booléen.' })
+  masqued: boolean;
 }

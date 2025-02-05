@@ -20,6 +20,7 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
       id: true,
       intitule: true,
       priority: true,
+      masqued: true,
       skills: true,
     });
   }
@@ -27,37 +28,60 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
   /**
    * INDEX
    * _
-   * @description get all skill categories
-   */
-  async getAllCategoriesAdmin() {
-    return await this.getAll({
-      id: true,
-      intitule: true,
-      skills: true,
-      priority: true,
-      createdAt: true,
-    });
-  }
-
-  /**
-   * INDEX
-   * _
-   * @description get all categories
+   * @description get all categories with pagination, search, and filters
    */
   async getCategoriesPaginate({
     page,
     pageSize,
     search,
+    filters,
   }: {
     page: number;
     pageSize: number;
-    search: string;
+    search?: string;
+    filters?: {
+      createdAt?: [Date, Date];
+      numberMin?: number;
+      numberMax?: number;
+    };
   }) {
     const searchCondition = search
       ? {
           OR: [
             { intitule: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
           ],
+        }
+      : {};
+
+    const filtersObject =
+      typeof filters === 'string' ? JSON.parse(filters) : filters;
+
+    // Build filters condition
+    const filtersCondition = filtersObject
+      ? {
+          AND: [
+            filtersObject.createdAt
+              ? {
+                  createdAt: {
+                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
+                    lte: filtersObject.createdAt[1], // Less than or equal to end date
+                  },
+                }
+              : null,
+            filtersObject.numberMin || filtersObject.numberMax
+              ? {
+                  number: {
+                    ...(filtersObject.numberMin && {
+                      gte: filtersObject.numberMin,
+                    }),
+                    ...(filtersObject.numberMax && {
+                      lte: filtersObject.numberMax,
+                    }),
+                  },
+                }
+              : null,
+          ].filter(Boolean),
+          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
         }
       : {};
 
@@ -69,9 +93,14 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
         intitule: true,
         skills: true,
         priority: true,
+        masqued: true,
         createdAt: true,
       },
-      searchCondition,
+      {
+        AND: [searchCondition, filtersCondition].filter(
+          (condition) => Object.keys(condition).length > 0,
+        ),
+      },
     );
   }
 
@@ -85,7 +114,11 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
   }: {
     createSkillCategoryDto: CreateSkillCategoryDto;
   }) {
-    return await this.create(createSkillCategoryDto);
+    const sanitizedData = {
+      ...createSkillCategoryDto,
+      priority: Number(createSkillCategoryDto.priority),
+    };
+    return await this.create(sanitizedData);
   }
 
   /**
@@ -100,7 +133,14 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
     categoryId: string;
     updateSkillCategoryDto: UpdateSkillCategoryDto;
   }) {
-    return await this.update(categoryId, updateSkillCategoryDto);
+    let sanitizedData = updateSkillCategoryDto;
+    if (updateSkillCategoryDto.priority) {
+      sanitizedData = {
+        ...updateSkillCategoryDto,
+        priority: Number(updateSkillCategoryDto.priority),
+      };
+    }
+    return await this.update(categoryId, sanitizedData);
   }
 
   /**

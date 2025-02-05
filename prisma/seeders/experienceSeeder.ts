@@ -66,6 +66,7 @@ export async function seedExperience() {
           location: item.location,
           description: item.description,
           masqued: item.masqued,
+          priority: item.priority,
         },
       });
     }

@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
-import { CreateAboutDto } from './dto/create-about.dto';
-import { UpdateAboutDto } from './dto/update-about.dto';
 import { BaseService } from 'src/base.service';
+import { PrismaService } from 'src/prisma.service';
+import { UpdateHobbyDto } from './dto/update-hobby.dto';
+import { CreateHobbyDto } from './dto/create-hobby.dto';
 
 @Injectable()
-export class AboutService extends BaseService<'about'> {
+export class HobbyService extends BaseService<'hobby'> {
   constructor(prismaService: PrismaService) {
-    super(prismaService, 'about');
+    super(prismaService, 'hobby');
   }
 
   /**
    * INDEX
    * _
-   * @description get all abouts ref
+   * @description get all hobbies
    */
-  async getAbouts() {
-    return await this.getAllOrderByPriority({
+  async getHobbies() {
+    return await this.getAll({
       id: true,
-      label: true,
-      number: true,
-      priority: true,
+      titre: true,
+      emoji: true,
+      top: true,
+      left: true,
       masqued: true,
     });
   }
@@ -28,9 +29,9 @@ export class AboutService extends BaseService<'about'> {
   /**
    * INDEX
    * _
-   * @description Get all abouts with pagination, search, and filters
+   * @description get all hobbies
    */
-  async getAboutsPaginate({
+  async getHobbiesPaginate({
     page,
     pageSize,
     search,
@@ -38,18 +39,18 @@ export class AboutService extends BaseService<'about'> {
   }: {
     page: number;
     pageSize: number;
-    search?: string; // Made optional
+    search?: string;
     filters?: {
       createdAt?: [Date, Date];
       numberMin?: number;
       numberMax?: number;
     };
   }) {
-    // Build search condition
     const searchCondition = search
       ? {
           OR: [
-            { label: { contains: search, mode: 'insensitive' } }, // Search by label (case-insensitive)
+            { titre: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
+            { emoji: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
           ],
         }
       : {};
@@ -91,9 +92,10 @@ export class AboutService extends BaseService<'about'> {
       pageSize,
       {
         id: true,
-        label: true,
-        number: true,
-        priority: true,
+        titre: true,
+        emoji: true,
+        top: true,
+        left: true,
         masqued: true,
         createdAt: true,
       },
@@ -108,44 +110,33 @@ export class AboutService extends BaseService<'about'> {
   /**
    * POST
    * _
-   * @description create an about ref
+   * @description create a hobby
    */
-  async createAbout({ createAboutDto }: { createAboutDto: CreateAboutDto }) {
-    const sanitizedData = {
-      ...createAboutDto,
-      priority: Number(createAboutDto.priority),
-    };
-    return await this.create(sanitizedData);
+  async createHobby({ createHobbyDto }: { createHobbyDto: CreateHobbyDto }) {
+    return await this.create(createHobbyDto);
   }
 
   /**
    * PUT
    * _
-   * @description update an about ref
+   * @description update a hobby
    */
-  async updateAbout({
-    aboutId,
-    updateAboutDto,
+  async updateHobby({
+    hobbyId,
+    updateHobbyDto,
   }: {
-    aboutId: string;
-    updateAboutDto: UpdateAboutDto;
+    hobbyId: string;
+    updateHobbyDto: UpdateHobbyDto;
   }) {
-    let sanitizedData = updateAboutDto;
-    if (updateAboutDto.priority) {
-      sanitizedData = {
-        ...updateAboutDto,
-        priority: Number(updateAboutDto.priority),
-      };
-    }
-    return await this.update(aboutId, sanitizedData);
+    return await this.update(hobbyId, updateHobbyDto);
   }
 
   /**
    * DELETE
    * _
-   * @description delete an about ref
+   * @description delete a hobby
    */
-  async deleteAbout({ aboutId }: { aboutId: string }) {
-    return await this.delete(aboutId);
+  async deleteHobby({ hobbyId }: { hobbyId: string }) {
+    return await this.delete(hobbyId);
   }
 }
