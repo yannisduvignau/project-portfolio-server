@@ -17,12 +17,10 @@ export class SectionService extends BaseService<'section'> {
    */
   async getAllSections() {
     return await this.getAllOrderByPriority({
-      id: true,
       label: true,
+      label_en: true,
       link: true,
       className: true,
-      priority: true,
-      masqued: true,
     });
   }
 
@@ -94,9 +92,11 @@ export class SectionService extends BaseService<'section'> {
       {
         id: true,
         label: true,
+        label_en: true,
         link: true,
         className: true,
         priority: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },
@@ -121,6 +121,7 @@ export class SectionService extends BaseService<'section'> {
     const sanitizedData = {
       ...createSectionDto,
       priority: Number(createSectionDto.priority),
+      masqued: Boolean(createSectionDto.masqued),
     };
     return await this.create(sanitizedData);
   }
@@ -140,8 +141,14 @@ export class SectionService extends BaseService<'section'> {
     let sanitizedData = updateSectionDto;
     if (updateSectionDto.priority) {
       sanitizedData = {
-        ...updateSectionDto,
-        priority: Number(updateSectionDto.priority),
+        ...sanitizedData,
+        priority: Number(sanitizedData.priority),
+      };
+    }
+    if (updateSectionDto.masqued) {
+      sanitizedData = {
+        ...sanitizedData,
+        masqued: Boolean(sanitizedData.masqued),
       };
     }
     return await this.update(itemId, sanitizedData);

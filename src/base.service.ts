@@ -38,6 +38,9 @@ export class BaseService<T extends keyof PrismaService> {
   async getAllOrderByPriority(select?: any) {
     return await (this.model as any).findMany({
       select,
+      where: {
+        masqued: false,
+      },
       orderBy: {
         priority: 'asc', // Tri par ordre croissant, utilisez 'desc' pour décroissant
       },

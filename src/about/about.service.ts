@@ -17,11 +17,9 @@ export class AboutService extends BaseService<'about'> {
    */
   async getAbouts() {
     return await this.getAllOrderByPriority({
-      id: true,
       label: true,
+      label_en: true,
       number: true,
-      priority: true,
-      masqued: true,
     });
   }
 
@@ -92,8 +90,10 @@ export class AboutService extends BaseService<'about'> {
       {
         id: true,
         label: true,
+        label_en: true,
         number: true,
         priority: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },

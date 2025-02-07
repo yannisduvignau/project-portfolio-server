@@ -17,10 +17,8 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
    */
   async getAllCategories() {
     return await this.getAllOrderByPriority({
-      id: true,
       title: true,
-      priority: true,
-      masqued: true,
+      title_en: true,
       skills: true,
     });
   }
@@ -91,8 +89,10 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
       {
         id: true,
         title: true,
+        title_en: true,
         skills: true,
         priority: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },

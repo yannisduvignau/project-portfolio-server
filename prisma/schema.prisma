@@ -48,35 +48,44 @@ model Donation {
 // A propos
 model About {
   id        String   @id @default(cuid())
-  label     String
-  number    Int
+  label     String   @default("")
+  label_en  String   @default("")
+  number    Int      @default(0)
   priority  Int      @default(0)
   masqued   Boolean  @default(false)
+  slug      String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 // Experiences
 model Experience {
-  id          String   @id @default(cuid())
-  date        String
-  title       String
-  location    String
-  description String
-  priority    Int      @default(0)
-  masqued     Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  date           String   @default("")
+  date_en        String   @default("")
+  title          String   @default("")
+  title_en       String   @default("")
+  location       String   @default("")
+  location_en    String   @default("")
+  description    String   @default("")
+  description_en String   @default("")
+  priority       Int      @default(0)
+  masqued        Boolean  @default(false)
+  slug           String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // Hobbies
 model Hobby {
   id        String   @id @default(cuid())
-  title     String
+  title     String   @default("")
+  title_en  String   @default("")
   emoji     String?
   top       Int      @default(0)
   left      Int      @default(0)
   masqued   Boolean  @default(false)
+  slug      String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -84,11 +93,13 @@ model Hobby {
 // ItemsSection
 model Section {
   id        String   @id @default(cuid())
-  label     String
+  label     String   @default("")
+  label_en  String   @default("")
   link      String
   className String
   priority  Int      @default(0)
   masqued   Boolean  @default(false)
+  slug      String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -96,53 +107,63 @@ model Section {
 // Projects
 model Project {
   id          String   @id @default(cuid())
-  title       String
+  title       String   @default("")
+  title_en    String   @default("")
   imgSrc      String?
   projectLink String
   tags        String[]
+  tags_en     String[]
   priority    Int      @default(0)
   masqued     Boolean  @default(false)
+  slug        String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 // Testimoniaux
 model Review {
-  id        String   @id @default(cuid())
-  content   String
-  imgSrc    String?
-  name      String
-  company   String
-  stars     Int
-  masqued   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  content    String   @default("")
+  content_en String   @default("")
+  imgSrc     String?
+  name       String   @default("")
+  company    String   @default("")
+  stars      Int      @default(5)
+  masqued    Boolean  @default(false)
+  slug       String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 // Catégories de compétence
 model SkillCategory {
   id        String   @id @default(cuid())
-  title     String
+  title     String   @default("")
+  title_en  String   @default("")
   skills    Skill[]
   priority  Int      @default(0)
   masqued   Boolean  @default(false)
+  slug      String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 // Compétences
 model Skill {
-  id          String        @id @default(cuid())
-  title       String
-  description String
-  stars       Int
-  iconSrc     String?
-  priority    Int           @default(0)
-  masqued     Boolean       @default(false)
-  categoryId  String
-  category    SkillCategory @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  title          String        @default("")
+  title_en       String        @default("")
+  description    String        @default("")
+  description_en String        @default("")
+  stars          Int           @default(0)
+  iconSrc        String?
+  priority       Int           @default(0)
+  masqued        Boolean       @default(false)
+  slug           String        @default("")
+  categoryId     String
+  category       SkillCategory @relation(fields: [categoryId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([categoryId])
 }

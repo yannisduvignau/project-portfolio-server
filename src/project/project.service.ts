@@ -16,14 +16,13 @@ export class ProjectService extends BaseService<'project'> {
    * @description get all projects
    */
   async getProjects() {
-    return await this.getAll({
-      id: true,
+    return await this.getAllOrderByPriority({
       title: true,
+      title_en: true,
       imgSrc: true,
       projectLink: true,
       tags: true,
-      priority: true,
-      masqued: true,
+      tags_en: true,
     });
   }
 
@@ -94,10 +93,13 @@ export class ProjectService extends BaseService<'project'> {
       {
         id: true,
         title: true,
+        title_en: true,
         imgSrc: true,
         projectLink: true,
         tags: true,
+        tags_en: true,
         priority: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },
@@ -137,6 +139,7 @@ export class ProjectService extends BaseService<'project'> {
     const sanitizedData = {
       ...createProjectDto,
       priority: Number(createProjectDto.priority),
+      masqued: Boolean(createProjectDto.masqued),
     };
     return await this.create(sanitizedData);
   }
@@ -156,8 +159,14 @@ export class ProjectService extends BaseService<'project'> {
     let sanitizedData = updateProjectDto;
     if (updateProjectDto.priority) {
       sanitizedData = {
-        ...updateProjectDto,
-        priority: Number(updateProjectDto.priority),
+        ...sanitizedData,
+        priority: Number(sanitizedData.priority),
+      };
+    }
+    if (updateProjectDto.masqued) {
+      sanitizedData = {
+        ...sanitizedData,
+        masqued: Boolean(sanitizedData.masqued),
       };
     }
     return await this.update(projectId, sanitizedData);

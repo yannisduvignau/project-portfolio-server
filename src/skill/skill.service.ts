@@ -16,15 +16,13 @@ export class SkillService extends BaseService<'skill'> {
    * @description get all skills
    */
   async getSkills() {
-    return await this.getAll({
-      id: true,
+    return await this.getAllOrderByPriority({
       title: true,
+      title_en: true,
       description: true,
+      description_en: true,
       stars: true,
       iconSrc: true,
-      categoryId: true,
-      priority: true,
-      masqued: true,
     });
   }
 
@@ -95,12 +93,15 @@ export class SkillService extends BaseService<'skill'> {
       {
         id: true,
         title: true,
+        title_en: true,
         description: true,
+        description_en: true,
         stars: true,
         iconSrc: true,
         categoryId: true,
         category: true,
         priority: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },

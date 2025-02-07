@@ -16,14 +16,15 @@ export class ExperienceService extends BaseService<'experience'> {
    * @description get all experiences
    */
   async getExperiences() {
-    return await this.getAll({
-      id: true,
+    return await this.getAllOrderByPriority({
       date: true,
+      date_en: true,
       title: true,
+      title_en: true,
       location: true,
+      location_en: true,
       description: true,
-      priority: true,
-      masqued: true,
+      description_en: true,
     });
   }
 
@@ -82,10 +83,15 @@ export class ExperienceService extends BaseService<'experience'> {
       {
         id: true,
         date: true,
+        date_en: true,
         title: true,
+        title_en: true,
         location: true,
+        location_en: true,
         description: true,
+        description_en: true,
         priority: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },

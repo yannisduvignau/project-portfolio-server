@@ -17,12 +17,11 @@ export class ReviewService extends BaseService<'review'> {
    */
   async getReviews() {
     return await this.getAll({
-      id: true,
       content: true,
+      content_en: true,
       imgSrc: true,
       name: true,
       company: true,
-      masqued: true,
     });
   }
 
@@ -109,10 +108,12 @@ export class ReviewService extends BaseService<'review'> {
       {
         id: true,
         content: true,
+        content_en: true,
         imgSrc: true,
         name: true,
         company: true,
         stars: true,
+        slug: true,
         masqued: true,
         createdAt: true,
       },
