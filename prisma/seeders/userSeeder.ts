@@ -16,23 +16,27 @@ export async function seedUser() {
     },
   ];
 
-  for (const user of userItems) {
-    // Vérifie si un utilisateur avec le même email existe déjà
-    const existingUser = await prisma.user.findUnique({
-      where: { email: user.email },
-    });
-
-    // Si l'utilisateur n'existe pas, il est créé
-    if (!existingUser) {
-      await prisma.user.create({
-        data: {
-          email: user.email,
-          firstname: user.firstname,
-          password: user.password,
+  try {
+    for (const item of userItems) {
+      await prisma.user.upsert({
+        where: { email: item.email },
+        update: {
+          email: item.email,
+          firstname: item.firstname,
+          password: item.password,
+        },
+        create: {
+          email: item.email,
+          firstname: item.firstname,
+          password: item.password,
         },
       });
     }
-  }
 
-  console.log('Seed data for User created');
+    console.log('✅ Seed data for User created/updated successfully');
+  } catch (error) {
+    console.error('Error seeding User:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
 }

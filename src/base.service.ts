@@ -128,4 +128,15 @@ export class BaseService<T extends keyof PrismaService> {
     if (!item) throw new NotFoundException(`Item not found`);
     return await (this.model as any).delete({ where: { id } });
   }
+
+  /**
+   * FIND ONE
+   * _
+   * @description Find an item by any criteria
+   */
+  async findOne(where: any, select?: any) {
+    const item = await (this.model as any).findFirst({ where, select });
+    if (!item) throw new NotFoundException(`Item not found`);
+    return item;
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { BaseService } from 'src/base.service';
 import { PrismaService } from 'src/prisma.service';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -13,37 +13,59 @@ export class ReviewService extends BaseService<'review'> {
   /**
    * INDEX
    * _
-   * @description get all reviews
+   * @description Get all reviews
    */
   async getReviews() {
-    return await this.getAll({
-      content: true,
-      content_en: true,
-      imgSrc: true,
-      name: true,
-      company: true,
-    });
+    try {
+      return await this.getAll({
+        content: true,
+        content_en: true,
+        imgSrc: true,
+        name: true,
+        company: true,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching reviews',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * SHOW
    * _
-   * @description get one review
+   * @description Get one review by ID
    */
   async getReviewByID({ reviewId }: { reviewId: string }) {
-    return await this.getById(reviewId, {
-      id: true,
-      content: true,
-      imgSrc: true,
-      name: true,
-      compagny: true,
-    });
+    try {
+      const review = await this.getById(reviewId, {
+        id: true,
+        content: true,
+        imgSrc: true,
+        name: true,
+        company: true,
+      });
+
+      if (!review) {
+        throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
+      }
+
+      return review;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching review',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * INDEX
    * _
-   * @description get all reviews
+   * @description Get paginated reviews with search and filters
    */
   async getReviewsPaginate({
     page,
@@ -60,88 +82,89 @@ export class ReviewService extends BaseService<'review'> {
       numberMax?: number;
     };
   }) {
-    const searchCondition = search
-      ? {
-          OR: [
-            { content: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
-            { name: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
-            { company: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
-          ],
-        }
-      : {};
+    try {
+      // Search condition
+      const searchCondition = search
+        ? {
+            OR: [
+              { content: { contains: search, mode: 'insensitive' } },
+              { name: { contains: search, mode: 'insensitive' } },
+              { company: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {};
 
-    const filtersObject =
-      typeof filters === 'string' ? JSON.parse(filters) : filters;
+      // Parse filters if needed
+      const filtersObject =
+        typeof filters === 'string' ? JSON.parse(filters) : filters;
 
-    // Build filters condition
-    const filtersCondition = filtersObject
-      ? {
-          AND: [
-            filtersObject.createdAt
-              ? {
-                  createdAt: {
-                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
-                    lte: filtersObject.createdAt[1], // Less than or equal to end date
-                  },
-                }
-              : null,
-            filtersObject.numberMin || filtersObject.numberMax
-              ? {
-                  number: {
-                    ...(filtersObject.numberMin && {
-                      gte: filtersObject.numberMin,
-                    }),
-                    ...(filtersObject.numberMax && {
-                      lte: filtersObject.numberMax,
-                    }),
-                  },
-                }
-              : null,
-          ].filter(Boolean),
-          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
-        }
-      : {};
+      // Build filters condition
+      const filtersCondition: any = {};
+      if (filtersObject?.createdAt) {
+        filtersCondition.createdAt = {
+          gte: filtersObject.createdAt[0],
+          lte: filtersObject.createdAt[1],
+        };
+      }
+      if (filtersObject?.numberMin || filtersObject?.numberMax) {
+        filtersCondition.number = {
+          ...(filtersObject.numberMin && { gte: filtersObject.numberMin }),
+          ...(filtersObject.numberMax && { lte: filtersObject.numberMax }),
+        };
+      }
 
-    return await this.getAllPaginate(
-      page,
-      pageSize,
-      {
-        id: true,
-        content: true,
-        content_en: true,
-        imgSrc: true,
-        name: true,
-        company: true,
-        stars: true,
-        slug: true,
-        masqued: true,
-        createdAt: true,
-      },
-      {
-        AND: [searchCondition, filtersCondition].filter(
-          (condition) => Object.keys(condition).length > 0,
-        ),
-      },
-    );
+      return await this.getAllPaginate(
+        page,
+        pageSize,
+        {
+          id: true,
+          content: true,
+          content_en: true,
+          imgSrc: true,
+          name: true,
+          company: true,
+          stars: true,
+          slug: true,
+          masqued: true,
+          createdAt: true,
+        },
+        {
+          AND: [searchCondition, filtersCondition].filter(
+            (condition) => Object.keys(condition).length > 0,
+          ),
+        },
+      );
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching paginated reviews',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * POST
    * _
-   * @description create a review
+   * @description Create a review
    */
   async createReview({
     createReviewDto,
   }: {
     createReviewDto: CreateReviewDto;
   }) {
-    const sanitizedData = {
-      ...createReviewDto,
-      stars: Number(createReviewDto.stars),
-      priority: Number(createReviewDto.priority),
-    };
+    try {
+      const sanitizedData = {
+        ...createReviewDto,
+        stars: Number(createReviewDto.stars),
+        priority: Number(createReviewDto.priority),
+      };
 
-    return await this.create(sanitizedData);
+      return await this.create(sanitizedData);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Error creating review', HttpStatus.BAD_REQUEST);
+    }
   }
 
   /**
@@ -155,24 +178,60 @@ export class ReviewService extends BaseService<'review'> {
     reviewId: string;
     updateReviewDto: UpdateReviewDto;
   }) {
-    const sanitizedData = { ...updateReviewDto };
+    try {
+      const sanitizedData: any = { ...updateReviewDto };
 
-    if (updateReviewDto.stars !== undefined) {
-      sanitizedData.stars = Number(updateReviewDto.stars);
-    }
-    if (updateReviewDto.priority !== undefined) {
-      sanitizedData.priority = Number(updateReviewDto.priority);
-    }
+      if (updateReviewDto.stars !== undefined) {
+        sanitizedData.stars = Number(updateReviewDto.stars);
+      }
+      if (updateReviewDto.priority !== undefined) {
+        sanitizedData.priority = Number(updateReviewDto.priority);
+      }
 
-    return await this.update(reviewId, sanitizedData);
+      return await this.update(reviewId, sanitizedData);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Error updating review', HttpStatus.BAD_REQUEST);
+    }
   }
 
   /**
    * DELETE
    * _
-   * @description delete a review
+   * @description Delete a review
    */
   async deleteReview({ reviewId }: { reviewId: string }) {
-    return await this.delete(reviewId);
+    try {
+      return await this.delete(reviewId);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error deleting review',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET
+   * _
+   * @description Find a review by slug
+   */
+  async findBySlug(slug: string) {
+    try {
+      const review = await this.findOne({ where: { slug } });
+
+      if (!review) {
+        throw new HttpException('Review not found', HttpStatus.NOT_FOUND);
+      }
+
+      return review;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching review',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

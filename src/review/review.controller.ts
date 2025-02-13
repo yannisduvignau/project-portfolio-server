@@ -32,7 +32,7 @@ import {
 } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 
-const uploadPath = '../front/src/assets'; // Replace '/src/assets'
+const uploadPath = process.env.UPLOAD_PATH;
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -134,13 +134,13 @@ export class ReviewController {
       return await this.reviewService.createReview({
         createReviewDto: {
           ...createReviewDto,
-          imgSrc: '/src/assets/defaultAvatar.png',
+          imgSrc: 'defaultAvatar.png',
         },
       });
       //throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
     }
 
-    const imagePath = `/src/assets/${file.filename}`;
+    const imagePath = `${file.filename}`;
 
     return await this.reviewService.createReview({
       createReviewDto: { ...createReviewDto, imgSrc: imagePath },
@@ -185,12 +185,12 @@ export class ReviewController {
 
     if (file) {
       // Si un nouveau fichier est téléchargé, on crée le chemin de la nouvelle image
-      const updatedImgSrc = `/src/assets/${file.filename}`;
+      const updatedImgSrc = `${file.filename}`;
 
       // Supprimer l'ancienne image si elle existe
       if (
         existingReview.imgSrc &&
-        existingReview.imgSrc !== '/src/assets/defaultAvatar.png'
+        existingReview.imgSrc !== 'defaultAvatar.png'
       ) {
         const oldImagePath = `.${existingReview.imgSrc}`;
         try {

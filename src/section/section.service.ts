@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { BaseService } from 'src/base.service';
 import { PrismaService } from 'src/prisma.service';
 import { UpdateSectionDto } from './dto/update-section.dto';
@@ -13,21 +13,29 @@ export class SectionService extends BaseService<'section'> {
   /**
    * INDEX
    * _
-   * @description get all section items
+   * @description Get all section items
    */
   async getAllSections() {
-    return await this.getAllOrderByPriority({
-      label: true,
-      label_en: true,
-      link: true,
-      className: true,
-    });
+    try {
+      return await this.getAllOrderByPriority({
+        label: true,
+        label_en: true,
+        link: true,
+        className: true,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching sections',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * INDEX
    * _
-   * @description get all sections with pagination, search, and filters
+   * @description Get all sections with pagination, search, and filters
    */
   async getSectionsPaginate({
     page,
@@ -44,122 +52,156 @@ export class SectionService extends BaseService<'section'> {
       numberMax?: number;
     };
   }) {
-    const searchCondition = search
-      ? {
-          OR: [
-            { label: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
-            { link: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
-            { className: { contains: search, mode: 'insensitive' } }, // Recherche par description (si nécessaire)
-          ],
-        }
-      : {};
+    try {
+      // Search condition
+      const searchCondition = search
+        ? {
+            OR: [
+              { label: { contains: search, mode: 'insensitive' } },
+              { link: { contains: search, mode: 'insensitive' } },
+              { className: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {};
 
-    const filtersObject =
-      typeof filters === 'string' ? JSON.parse(filters) : filters;
+      // Parse filters if needed
+      const filtersObject =
+        typeof filters === 'string' ? JSON.parse(filters) : filters;
 
-    // Build filters condition
-    const filtersCondition = filtersObject
-      ? {
-          AND: [
-            filtersObject.createdAt
-              ? {
-                  createdAt: {
-                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
-                    lte: filtersObject.createdAt[1], // Less than or equal to end date
-                  },
-                }
-              : null,
-            filtersObject.numberMin || filtersObject.numberMax
-              ? {
-                  number: {
-                    ...(filtersObject.numberMin && {
-                      gte: filtersObject.numberMin,
-                    }),
-                    ...(filtersObject.numberMax && {
-                      lte: filtersObject.numberMax,
-                    }),
-                  },
-                }
-              : null,
-          ].filter(Boolean),
-          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
-        }
-      : {};
+      // Build filters condition
+      const filtersCondition: any = {};
+      if (filtersObject?.createdAt) {
+        filtersCondition.createdAt = {
+          gte: filtersObject.createdAt[0],
+          lte: filtersObject.createdAt[1],
+        };
+      }
+      if (filtersObject?.numberMin || filtersObject?.numberMax) {
+        filtersCondition.number = {
+          ...(filtersObject.numberMin && { gte: filtersObject.numberMin }),
+          ...(filtersObject.numberMax && { lte: filtersObject.numberMax }),
+        };
+      }
 
-    return await this.getAllPaginate(
-      page,
-      pageSize,
-      {
-        id: true,
-        label: true,
-        label_en: true,
-        link: true,
-        className: true,
-        priority: true,
-        slug: true,
-        masqued: true,
-        createdAt: true,
-      },
-      {
-        AND: [searchCondition, filtersCondition].filter(
-          (condition) => Object.keys(condition).length > 0,
-        ),
-      },
-    );
+      return await this.getAllPaginate(
+        page,
+        pageSize,
+        {
+          id: true,
+          label: true,
+          label_en: true,
+          link: true,
+          className: true,
+          priority: true,
+          slug: true,
+          masqued: true,
+          createdAt: true,
+        },
+        {
+          AND: [searchCondition, filtersCondition].filter(
+            (condition) => Object.keys(condition).length > 0,
+          ),
+        },
+      );
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching paginated sections',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * POST
    * _
-   * @description create an item for section
+   * @description Create a section item
    */
   async createSection({
     createSectionDto,
   }: {
     createSectionDto: CreateSectionDto;
   }) {
-    const sanitizedData = {
-      ...createSectionDto,
-      priority: Number(createSectionDto.priority),
-      masqued: Boolean(createSectionDto.masqued),
-    };
-    return await this.create(sanitizedData);
+    try {
+      const sanitizedData = {
+        ...createSectionDto,
+        priority: Number(createSectionDto.priority),
+        masqued: Boolean(createSectionDto.masqued),
+      };
+
+      return await this.create(sanitizedData);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Error creating section', HttpStatus.BAD_REQUEST);
+    }
   }
 
   /**
    * PUT
    * _
-   * @description update an item for section
+   * @description Update a section item
    */
-  async updateCategory({
+  async updateSection({
     itemId,
     updateSectionDto,
   }: {
     itemId: string;
     updateSectionDto: UpdateSectionDto;
   }) {
-    let sanitizedData = updateSectionDto;
-    if (updateSectionDto.priority) {
-      sanitizedData = {
-        ...sanitizedData,
-        priority: Number(sanitizedData.priority),
-      };
+    try {
+      const sanitizedData: any = { ...updateSectionDto };
+
+      if (updateSectionDto.priority !== undefined) {
+        sanitizedData.priority = Number(updateSectionDto.priority);
+      }
+      if (updateSectionDto.masqued !== undefined) {
+        sanitizedData.masqued = Boolean(updateSectionDto.masqued);
+      }
+
+      return await this.update(itemId, sanitizedData);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Error updating section', HttpStatus.BAD_REQUEST);
     }
-    if (updateSectionDto.masqued) {
-      sanitizedData = {
-        ...sanitizedData,
-        masqued: Boolean(sanitizedData.masqued),
-      };
-    }
-    return await this.update(itemId, sanitizedData);
   }
 
   /**
    * DELETE
    * _
-   * @description delete an item for section
+   * @description Delete a section item
    */
-  async deleteCategory({ itemId }: { itemId: string }) {
-    return await this.delete(itemId);
+  async deleteSection({ itemId }: { itemId: string }) {
+    try {
+      return await this.delete(itemId);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error deleting section',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET
+   * _
+   * @description Find a section by slug
+   */
+  async findBySlug(slug: string) {
+    try {
+      const section = await this.findOne({ where: { slug } });
+
+      if (!section) {
+        throw new HttpException('Section not found', HttpStatus.NOT_FOUND);
+      }
+
+      return section;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching section',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

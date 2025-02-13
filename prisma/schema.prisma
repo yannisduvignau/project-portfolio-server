@@ -48,12 +48,12 @@ model Donation {
 // A propos
 model About {
   id        String   @id @default(cuid())
-  label     String   @default("")
-  label_en  String   @default("")
+  label     String
+  label_en  String
   number    Int      @default(0)
   priority  Int      @default(0)
   masqued   Boolean  @default(false)
-  slug      String   @default("")
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -63,15 +63,15 @@ model Experience {
   id             String   @id @default(cuid())
   date           String   @default("")
   date_en        String   @default("")
-  title          String   @default("")
-  title_en       String   @default("")
+  title          String
+  title_en       String
   location       String   @default("")
   location_en    String   @default("")
   description    String   @default("")
   description_en String   @default("")
   priority       Int      @default(0)
   masqued        Boolean  @default(false)
-  slug           String   @default("")
+  slug           String   @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -79,13 +79,13 @@ model Experience {
 // Hobbies
 model Hobby {
   id        String   @id @default(cuid())
-  title     String   @default("")
-  title_en  String   @default("")
+  title     String
+  title_en  String
   emoji     String?
   top       Int      @default(0)
   left      Int      @default(0)
   masqued   Boolean  @default(false)
-  slug      String   @default("")
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -93,13 +93,13 @@ model Hobby {
 // ItemsSection
 model Section {
   id        String   @id @default(cuid())
-  label     String   @default("")
-  label_en  String   @default("")
+  label     String
+  label_en  String
   link      String
   className String
   priority  Int      @default(0)
   masqued   Boolean  @default(false)
-  slug      String   @default("")
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -107,15 +107,15 @@ model Section {
 // Projects
 model Project {
   id          String   @id @default(cuid())
-  title       String   @default("")
-  title_en    String   @default("")
+  title       String
+  title_en    String
   imgSrc      String?
   projectLink String
   tags        String[]
   tags_en     String[]
   priority    Int      @default(0)
   masqued     Boolean  @default(false)
-  slug        String   @default("")
+  slug        String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -123,14 +123,14 @@ model Project {
 // Testimoniaux
 model Review {
   id         String   @id @default(cuid())
-  content    String   @default("")
-  content_en String   @default("")
+  content    String
+  content_en String
   imgSrc     String?
   name       String   @default("")
   company    String   @default("")
   stars      Int      @default(5)
   masqued    Boolean  @default(false)
-  slug       String   @default("")
+  slug       String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -138,12 +138,12 @@ model Review {
 // Catégories de compétence
 model SkillCategory {
   id        String   @id @default(cuid())
-  title     String   @default("")
-  title_en  String   @default("")
+  title     String
+  title_en  String
   skills    Skill[]
   priority  Int      @default(0)
   masqued   Boolean  @default(false)
-  slug      String   @default("")
+  slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -151,15 +151,15 @@ model SkillCategory {
 // Compétences
 model Skill {
   id             String        @id @default(cuid())
-  title          String        @default("")
-  title_en       String        @default("")
+  title          String
+  title_en       String
   description    String        @default("")
   description_en String        @default("")
   stars          Int           @default(0)
   iconSrc        String?
   priority       Int           @default(0)
   masqued        Boolean       @default(false)
-  slug           String        @default("")
+  slug           String        @unique
   categoryId     String
   category       SkillCategory @relation(fields: [categoryId], references: [id])
   createdAt      DateTime      @default(now())

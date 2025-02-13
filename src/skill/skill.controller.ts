@@ -32,7 +32,7 @@ import {
 } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 
-const uploadPath = '../front/src/assets'; // Replace '/src/assets'
+const uploadPath = process.env.UPLOAD_PATH;
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -134,13 +134,13 @@ export class SkillController {
       return this.skillService.createSkill({
         createSkillDto: {
           ...createSkillDto,
-          iconSrc: '/src/assets/defaultIcon.png',
+          iconSrc: 'defaultIcon.png',
         },
       });
       //throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
     }
 
-    const imagePath = `/src/assets/${file.filename}`;
+    const imagePath = `${file.filename}`;
 
     return this.skillService.createSkill({
       createSkillDto: { ...createSkillDto, iconSrc: imagePath },
@@ -185,12 +185,12 @@ export class SkillController {
 
     if (file) {
       // Si un nouveau fichier est téléchargé, on crée le chemin de la nouvelle image
-      const updatedImgSrc = `/src/assets/${file.filename}`;
+      const updatedImgSrc = `${file.filename}`;
 
       // Supprimer l'ancienne image si elle existe
       if (
         existingReview.iconSrc &&
-        existingReview.iconSrc !== '/src/assets/defaultAvatar.png'
+        existingReview.iconSrc !== 'defaultAvatar.png'
       ) {
         const oldImagePath = `.${existingReview.iconSrc}`;
         try {

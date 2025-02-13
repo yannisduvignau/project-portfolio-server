@@ -1,5 +1,5 @@
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { BaseService } from 'src/base.service';
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { UpdateSkillCategoryDto } from './dto/update-skill-category.dto';
 import { CreateSkillCategoryDto } from './dto/create-skill-category.dto';
@@ -13,20 +13,28 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
   /**
    * INDEX
    * _
-   * @description get all skill categories
+   * @description Get all skill categories
    */
   async getAllCategories() {
-    return await this.getAllOrderByPriority({
-      title: true,
-      title_en: true,
-      skills: true,
-    });
+    try {
+      return await this.getAllOrderByPriority({
+        title: true,
+        title_en: true,
+        skills: true,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching skill categories',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * INDEX
    * _
-   * @description get all categories with pagination, search, and filters
+   * @description Get all categories with pagination, search, and filters
    */
   async getCategoriesPaginate({
     page,
@@ -43,88 +51,92 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
       numberMax?: number;
     };
   }) {
-    const searchCondition = search
-      ? {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } }, // Recherche par label (insensible à la casse)
-          ],
-        }
-      : {};
+    try {
+      const searchCondition = search
+        ? {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } }, // Search by title (case insensitive)
+            ],
+          }
+        : {};
 
-    const filtersObject =
-      typeof filters === 'string' ? JSON.parse(filters) : filters;
+      const filtersObject =
+        typeof filters === 'string' ? JSON.parse(filters) : filters;
 
-    // Build filters condition
-    const filtersCondition = filtersObject
-      ? {
-          AND: [
-            filtersObject.createdAt
-              ? {
-                  createdAt: {
-                    gte: filtersObject.createdAt[0], // Greater than or equal to start date
-                    lte: filtersObject.createdAt[1], // Less than or equal to end date
-                  },
-                }
-              : null,
-            filtersObject.numberMin || filtersObject.numberMax
-              ? {
-                  number: {
-                    ...(filtersObject.numberMin && {
-                      gte: filtersObject.numberMin,
-                    }),
-                    ...(filtersObject.numberMax && {
-                      lte: filtersObject.numberMax,
-                    }),
-                  },
-                }
-              : null,
-          ].filter(Boolean),
-          //.filter((condition) => Object.keys(condition).length > 0), // Remove empty conditions
-        }
-      : {};
+      // Build filters condition
+      const filtersCondition: any = {};
+      if (filtersObject?.createdAt) {
+        filtersCondition.createdAt = {
+          gte: filtersObject.createdAt[0],
+          lte: filtersObject.createdAt[1],
+        };
+      }
+      if (filtersObject?.numberMin || filtersObject?.numberMax) {
+        filtersCondition.number = {
+          ...(filtersObject.numberMin && { gte: filtersObject.numberMin }),
+          ...(filtersObject.numberMax && { lte: filtersObject.numberMax }),
+        };
+      }
 
-    return await this.getAllPaginate(
-      page,
-      pageSize,
-      {
-        id: true,
-        title: true,
-        title_en: true,
-        skills: true,
-        priority: true,
-        slug: true,
-        masqued: true,
-        createdAt: true,
-      },
-      {
-        AND: [searchCondition, filtersCondition].filter(
-          (condition) => Object.keys(condition).length > 0,
-        ),
-      },
-    );
+      return await this.getAllPaginate(
+        page,
+        pageSize,
+        {
+          id: true,
+          title: true,
+          title_en: true,
+          skills: true,
+          priority: true,
+          slug: true,
+          masqued: true,
+          createdAt: true,
+        },
+        {
+          AND: [searchCondition, filtersCondition].filter(
+            (condition) => Object.keys(condition).length > 0,
+          ),
+        },
+      );
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching paginated categories',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**
    * POST
    * _
-   * @description create a skill category
+   * @description Create a skill category
    */
   async createCategory({
     createSkillCategoryDto,
   }: {
     createSkillCategoryDto: CreateSkillCategoryDto;
   }) {
-    const sanitizedData = {
-      ...createSkillCategoryDto,
-      priority: Number(createSkillCategoryDto.priority),
-    };
-    return await this.create(sanitizedData);
+    try {
+      const sanitizedData = {
+        ...createSkillCategoryDto,
+        priority: Number(createSkillCategoryDto.priority),
+        masqued: Boolean(createSkillCategoryDto.masqued),
+      };
+
+      return await this.create(sanitizedData);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error creating skill category',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   /**
    * PUT
    * _
-   * @description update an about ref
+   * @description Update a skill category
    */
   async updateCategory({
     categoryId,
@@ -133,22 +145,62 @@ export class SkillCategoryService extends BaseService<'skillCategory'> {
     categoryId: string;
     updateSkillCategoryDto: UpdateSkillCategoryDto;
   }) {
-    let sanitizedData = updateSkillCategoryDto;
-    if (updateSkillCategoryDto.priority) {
-      sanitizedData = {
-        ...updateSkillCategoryDto,
-        priority: Number(updateSkillCategoryDto.priority),
-      };
+    try {
+      const sanitizedData: any = { ...updateSkillCategoryDto };
+
+      if (updateSkillCategoryDto.priority !== undefined) {
+        sanitizedData.priority = Number(updateSkillCategoryDto.priority);
+      }
+      if (updateSkillCategoryDto.masqued !== undefined) {
+        sanitizedData.masqued = Boolean(updateSkillCategoryDto.masqued);
+      }
+      return await this.update(categoryId, sanitizedData);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error updating skill category',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    return await this.update(categoryId, sanitizedData);
   }
 
   /**
    * DELETE
    * _
-   * @description delete a skill category
+   * @description Delete a skill category
    */
   async deleteCategory({ categoryId }: { categoryId: string }) {
-    return await this.delete(categoryId);
+    try {
+      return await this.delete(categoryId);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error deleting skill category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET
+   * _
+   * @description Find a category by slug
+   */
+  async findBySlug(slug: string) {
+    try {
+      const category = await this.findOne({ where: { slug } });
+
+      if (!category) {
+        throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+      }
+
+      return category;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Error fetching category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

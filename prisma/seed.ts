@@ -19,7 +19,7 @@ async function main() {
   await seedProject();
   await seedReview();
   await seedSkill();
-  console.log('✅ Seed data has been inserted successfully.');
+  console.log('✨ Seed data has been inserted successfully. ✨');
 }
 
 main()

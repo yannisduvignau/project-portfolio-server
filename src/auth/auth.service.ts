@@ -1,97 +1,88 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { compare, hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { UserPayload } from './jwt.strategy';
 import { createId } from '@paralleldrive/cuid2';
-//import { MailerService } from 'src/mailer.service';
 import { LogUserDto } from './dto/log-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResetUserPasswordDto } from './dto/reset-user-password.dto';
-// import { MailerService } from 'src/mailer.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
-    // private readonly mailerService: MailerService,
   ) {}
+
+  /**
+   * Login a user
+   * Validates the email and password, returns an access token
+   */
   async login({ authBody }: { authBody: LogUserDto }) {
-    try {
-      const { email, password } = authBody;
+    const { email, password } = authBody;
 
-      const existingUser = await this.prismaService.user.findUnique({
-        where: {
-          email,
-        },
-      });
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { email },
+    });
 
-      if (!existingUser) {
-        throw new Error("L'utilisateur n'existe pas.");
-      }
-
-      const isPasswordValid = await this.isPasswordValid({
-        password,
-        hashedPassword: existingUser.password,
-      });
-
-      if (!isPasswordValid) {
-        throw new Error('Le mot de passe est invalide.');
-      }
-      return this.authenticateUser({
-        userId: existingUser.id,
-      });
-    } catch (error) {
-      return { error: true, message: error.message };
+    if (!existingUser) {
+      throw new HttpException('Utilisateur non trouvé.', HttpStatus.NOT_FOUND);
     }
+
+    const isPasswordValid = await this.isPasswordValid({
+      password,
+      hashedPassword: existingUser.password,
+    });
+
+    if (!isPasswordValid) {
+      throw new HttpException(
+        'Mot de passe invalide.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    return this.authenticateUser({ userId: existingUser.id });
   }
 
+  /**
+   * Register a new user
+   * Checks if the email exists, hashes the password and stores the new user
+   */
   async register({ registerBody }: { registerBody: CreateUserDto }) {
-    try {
-      const { email, firstname, password } = registerBody;
+    const { email, firstname, password } = registerBody;
 
-      const existingUser = await this.prismaService.user.findUnique({
-        where: {
-          email,
-        },
-      });
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { email },
+    });
 
-      if (existingUser) {
-        throw new Error('Un compte existe déjà à cette adresse email.');
-      }
-
-      const hashedPassword = await this.hashPwd({ password });
-
-      const createdUser = await this.prismaService.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          firstname,
-        },
-      });
-
-      // await this.mailerService.sendCreatedAccountEmail({
-      //   firstname,
-      //   recipient: email,
-      // });
-
-      return this.authenticateUser({
-        userId: createdUser.id,
-      });
-    } catch (error) {
-      return {
-        error: true,
-        message: error.message,
-      };
+    if (existingUser) {
+      throw new HttpException('Email déjà utilisé.', HttpStatus.BAD_REQUEST);
     }
+
+    const hashedPassword = await this.hashPwd({ password });
+
+    const createdUser = await this.prismaService.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        firstname,
+      },
+    });
+
+    return this.authenticateUser({ userId: createdUser.id });
   }
 
+  /**
+   * Hash the user's password
+   */
   private async hashPwd({ password }: { password: string }) {
-    const hashedPwd = await hash(password, 10);
-    return hashedPwd;
+    return hash(password, 10);
   }
 
+  /**
+   * Check if the provided password matches the stored hashed password
+   */
   private async isPasswordValid({
     password,
     hashedPassword,
@@ -99,135 +90,109 @@ export class AuthService {
     password: string;
     hashedPassword: string;
   }) {
-    const isPasswordValid = await compare(password, hashedPassword);
-    return isPasswordValid;
+    return compare(password, hashedPassword);
   }
 
+  /**
+   * Request for password reset token
+   * Ensures that the user exists and handles duplicate requests
+   */
   async resetUserPasswordRequest({ email }: { email: string }) {
-    try {
-      const existingUser = await this.prismaService.user.findUnique({
-        where: {
-          email,
-        },
-      });
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { email },
+    });
 
-      if (!existingUser) {
-        throw new Error("L'utilisateur n'existe pas.");
-      }
-
-      if (existingUser.isResettingPassword === true) {
-        throw new Error(
-          'Une demande de réinitialisation de mot de passe est déjà en cours.',
-        );
-      }
-
-      const createdId = createId();
-      await this.prismaService.user.update({
-        where: {
-          email,
-        },
-        data: {
-          isResettingPassword: true,
-          resetPasswordToken: createdId,
-        },
-      });
-      // await this.mailerService.sendRequestedPasswordEmail({
-      //   firstname: existingUser.firstname,
-      //   recipient: existingUser.email,
-      //   token: createdId,
-      // });
-
-      return {
-        error: false,
-        message:
-          'Veuillez consulter vos emails pour réinitialiser votre mot de passe.',
-      };
-      // return this.authenticateUser({
-      //   userId: existingUser.id,
-      // });
-    } catch (error) {
-      return { error: true, message: error.message };
+    if (!existingUser) {
+      throw new HttpException(
+        "L'utilisateur n'existe pas.",
+        HttpStatus.NOT_FOUND,
+      );
     }
+
+    if (existingUser.isResettingPassword) {
+      throw new HttpException(
+        'Une demande de réinitialisation de mot de passe est déjà en cours.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const resetPasswordToken = createId();
+    await this.prismaService.user.update({
+      where: { email },
+      data: {
+        isResettingPassword: true,
+        resetPasswordToken,
+      },
+    });
+
+    return {
+      error: false,
+      message: 'Consultez votre email pour réinitialiser votre mot de passe.',
+    };
   }
 
+  /**
+   * Verify the reset password token
+   */
   async verifyResetPasswordToken({ token }: { token: string }) {
-    try {
-      const existingUser = await this.prismaService.user.findUnique({
-        where: {
-          resetPasswordToken: token,
-        },
-      });
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { resetPasswordToken: token },
+    });
 
-      if (!existingUser) {
-        throw new Error("L'utilisateur n'existe pas.");
-      }
-
-      if (existingUser.isResettingPassword === false) {
-        throw new Error(
-          "Aucune demande de réinitialisation de mot de passe n'est en cours.",
-        );
-      }
-
-      return {
-        error: false,
-        message: 'Le token est valide et peut être utilisé.',
-      };
-      // return this.authenticateUser({
-      //   userId: existingUser.id,
-      // });
-    } catch (error) {
-      return { error: true, message: error.message };
+    if (!existingUser) {
+      throw new HttpException('Utilisateur non trouvé.', HttpStatus.NOT_FOUND);
     }
+
+    if (!existingUser.isResettingPassword) {
+      throw new HttpException(
+        "Aucune demande de réinitialisation de mot de passe n'est en cours.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return { error: false, message: 'Token valide.' };
   }
 
+  /**
+   * Reset the user's password using the provided token
+   */
   async resetUserPassword({
     resetPasswordDto,
   }: {
     resetPasswordDto: ResetUserPasswordDto;
   }) {
-    try {
-      const { password, token } = resetPasswordDto;
-      const existingUser = await this.prismaService.user.findUnique({
-        where: {
-          resetPasswordToken: token,
-        },
-      });
+    const { password, token } = resetPasswordDto;
 
-      if (!existingUser) {
-        throw new Error("L'utilisateur n'existe pas.");
-      }
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { resetPasswordToken: token },
+    });
 
-      if (existingUser.isResettingPassword === false) {
-        throw new Error(
-          "Aucune demande de réinitialisation de mot de passe n'est en cours.",
-        );
-      }
-
-      const hashedPassword = await this.hashPwd({
-        password,
-      });
-      await this.prismaService.user.update({
-        where: {
-          resetPasswordToken: token,
-        },
-        data: {
-          isResettingPassword: false,
-          password: hashedPassword,
-        },
-      });
-
-      return {
-        error: false,
-        message: 'Votre mot de passe a bien été changé.',
-      };
-      // return this.authenticateUser({
-      //   userId: existingUser.id,
-      // });
-    } catch (error) {
-      return { error: true, message: error.message };
+    if (!existingUser) {
+      throw new HttpException('Utilisateur non trouvé.', HttpStatus.NOT_FOUND);
     }
+
+    if (!existingUser.isResettingPassword) {
+      throw new HttpException(
+        "Aucune demande de réinitialisation de mot de passe n'est en cours.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const hashedPassword = await this.hashPwd({ password });
+    await this.prismaService.user.update({
+      where: { resetPasswordToken: token },
+      data: {
+        password: hashedPassword,
+        isResettingPassword: false,
+      },
+    });
+
+    return { error: false, message: 'Mot de passe réinitialisé avec succès.' };
   }
 
+  /**
+   * Authenticate the user by generating a JWT token
+   */
   private async authenticateUser({ userId }: UserPayload) {
     const payload: UserPayload = { userId };
     return {

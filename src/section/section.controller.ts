@@ -127,11 +127,11 @@ export class SectionController {
     description: 'The section has been successfully updated.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async updateCategory(
+  async updateSection(
     @Param('itemId') itemId: string,
     @Body() updateSectionDto: UpdateSectionDto,
   ): Promise<Observable<UpdateSectionDto>> {
-    return this.sectionService.updateCategory({
+    return this.sectionService.updateSection({
       itemId,
       updateSectionDto,
     });
@@ -152,7 +152,7 @@ export class SectionController {
     description: 'The section has been successfully deleted.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async deleteCategory(@Param('itemId') itemId: string) {
-    return this.sectionService.deleteCategory({ itemId });
+  async deleteSection(@Param('itemId') itemId: string) {
+    return this.sectionService.deleteSection({ itemId });
   }
 }

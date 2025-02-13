@@ -1,6 +1,7 @@
 dist
 node_modules
 test
+.github
 .dockerignore
 .env
 .env.example
@@ -8,4 +9,6 @@ test
 .gitignore
 .prettierrc
 Dockerfile
-README.md
+NESTJS_README.md
+PRISMA_README.md
+TODO.md
