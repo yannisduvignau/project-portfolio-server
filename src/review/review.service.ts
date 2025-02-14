@@ -38,7 +38,7 @@ export class ReviewService extends BaseService<'review'> {
    * _
    * @description Get one review by ID
    */
-  async getReviewByID({ reviewId }: { reviewId: string }) {
+  async getReviewById({ reviewId }: { reviewId: string }) {
     try {
       const review = await this.getById(reviewId, {
         id: true,
@@ -157,7 +157,6 @@ export class ReviewService extends BaseService<'review'> {
       const sanitizedData = {
         ...createReviewDto,
         stars: Number(createReviewDto.stars),
-        priority: Number(createReviewDto.priority),
       };
 
       return await this.create(sanitizedData);
@@ -183,9 +182,6 @@ export class ReviewService extends BaseService<'review'> {
 
       if (updateReviewDto.stars !== undefined) {
         sanitizedData.stars = Number(updateReviewDto.stars);
-      }
-      if (updateReviewDto.priority !== undefined) {
-        sanitizedData.priority = Number(updateReviewDto.priority);
       }
 
       return await this.update(reviewId, sanitizedData);

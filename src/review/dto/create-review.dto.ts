@@ -84,17 +84,6 @@ export class CreateReviewDto {
   stars: number;
 
   // -------------------------------------------------------------------
-  // Priority
-  // -------------------------------------------------------------------
-  @ApiProperty({
-    description: 'La priorité pour l’affichage.',
-    example: 1,
-  })
-  @IsNotEmpty({ message: 'La priorité est obligatoire.' })
-  @IsInt({ message: 'La priorité doit être un nombre entier.' })
-  priority: number;
-
-  // -------------------------------------------------------------------
   // Slug
   // -------------------------------------------------------------------
   @ApiProperty({

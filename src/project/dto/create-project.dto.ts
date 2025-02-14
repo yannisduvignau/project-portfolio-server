@@ -38,7 +38,7 @@ export class CreateProjectDto {
   // -------------------------------------------------------------------
   @ApiProperty({
     description: "Le chemin de l'image du projet.",
-    example: '/images/projet.png',
+    example: 'https://storage-bucket/projet.png',
   })
   @IsNotEmpty({ message: "Le chemin de l'image ne doit pas être vide." })
   @IsString({

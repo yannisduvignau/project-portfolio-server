@@ -9,18 +9,12 @@ import {
   Post,
   Put,
   Query,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { SkillService } from './skill.service';
 import { UpdateSkillDto } from './dto/update-skill.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import * as fs from 'fs';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -31,11 +25,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
-
-const uploadPath = process.env.UPLOAD_PATH;
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
 
 @ApiTags('skills')
 @Controller('skills')
@@ -55,6 +44,21 @@ export class SkillController {
   @ApiNotFoundResponse({ description: 'No skills found' })
   async getSkills() {
     return await this.skillService.getSkills();
+  }
+
+  /**
+   * SHOW
+   * _
+   * @description index a skill
+   * @route GET /projects/{id}
+   * @returns http resources
+   */
+  @Get('/show/:skillId')
+  @ApiOperation({ summary: 'Get a skill' })
+  @ApiResponse({ status: 200, description: 'Get all skills successfully' })
+  @ApiNotFoundResponse({ description: 'No skills found' })
+  async getProjectById(@Param('skillId') skillId: string) {
+    return await this.skillService.getSkillById({ skillId });
   }
 
   /**
@@ -115,35 +119,11 @@ export class SkillController {
     description: 'The skill has been successfully created.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: uploadPath,
-        filename: (_, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
   async createSkill(
     @Body() createSkillDto: CreateSkillDto,
-    @UploadedFile() file: Express.Multer.File,
   ): Promise<Observable<CreateSkillDto>> {
-    if (!file) {
-      return this.skillService.createSkill({
-        createSkillDto: {
-          ...createSkillDto,
-          iconSrc: 'defaultIcon.png',
-        },
-      });
-      //throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
-    }
-
-    const imagePath = `${file.filename}`;
-
     return this.skillService.createSkill({
-      createSkillDto: { ...createSkillDto, iconSrc: imagePath },
+      createSkillDto,
     });
   }
 
@@ -161,52 +141,10 @@ export class SkillController {
   @ApiCreatedResponse({
     description: 'The skill has been successfully updated.',
   })
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: uploadPath,
-        filename: (_, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
   async updateSkill(
     @Param('skillId') skillId: string,
     @Body() updateSkillDto: UpdateSkillDto,
-    @UploadedFile() file: Express.Multer.File,
   ): Promise<Observable<UpdateSkillDto>> {
-    // Récupérer le témoignage actuel pour obtenir l'ancienne image (si elle existe)
-    const existingReview = await this.skillService.getSkillById({
-      skillId,
-    });
-
-    if (file) {
-      // Si un nouveau fichier est téléchargé, on crée le chemin de la nouvelle image
-      const updatedImgSrc = `${file.filename}`;
-
-      // Supprimer l'ancienne image si elle existe
-      if (
-        existingReview.iconSrc &&
-        existingReview.iconSrc !== 'defaultAvatar.png'
-      ) {
-        const oldImagePath = `.${existingReview.iconSrc}`;
-        try {
-          // Vérifier si le fichier existe avant de tenter de le supprimer
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath); // Supprimer l'ancienne image
-          }
-        } catch (error) {
-          console.error('Error deleting old image:', error);
-        }
-      }
-      return await this.skillService.updateSkill({
-        skillId,
-        updateSkillDto: { ...updateSkillDto, iconSrc: updatedImgSrc },
-      });
-    }
     return await this.skillService.updateSkill({
       skillId,
       updateSkillDto,

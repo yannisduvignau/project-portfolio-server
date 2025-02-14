@@ -11,7 +11,8 @@ export async function seedReview() {
         'Exceptional web development! Delivered a seamless, responsive site with clean code and great UX.',
       name: 'Sophia Ramirez',
       stars: 5,
-      imgSrc: 'sophiaR.jpg',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/sophiaR.jpg',
       company: 'PixelForge',
       slug: 'sr_pixelforge',
       masqued: false,
@@ -23,7 +24,8 @@ export async function seedReview() {
         'Impressive work! Fast loading times, intuitive design, and flawless backend integration. Highly recommend.',
       name: 'Ethan Caldwell',
       stars: 5,
-      imgSrc: 'ethanC.jpeg',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/ethanC.jpeg',
       company: 'NexaWave',
       slug: 'ec_nexawave',
       masqued: false,
@@ -35,7 +37,8 @@ export async function seedReview() {
         'Outstanding developer! Built a robust site with perfect functionality. Efficient and detail-oriented.',
       name: 'Liam Bennett',
       stars: 5,
-      imgSrc: 'liamB.png',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/liamB.png',
       company: 'CodeCraft',
       slug: 'lb_codecraft',
       masqued: false,
@@ -47,7 +50,8 @@ export async function seedReview() {
         'Creative and skilled! Produced a modern, user-friendly site that exceeded expectations. Great communication.',
       name: 'Noah Williams',
       stars: 5,
-      imgSrc: 'noahW.jpeg',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/noahW.jpeg',
       company: 'BrightWeb',
       slug: 'nw_brightweb', // Correction ici
       masqued: false,
@@ -59,7 +63,8 @@ export async function seedReview() {
         'Professional work! Delivered on time, with a polished design and smooth user experience. Top-notch developer.',
       name: 'Ava Thompson',
       stars: 5,
-      imgSrc: 'avaT.jpg',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/avaT.jpg',
       company: 'TechMosaic',
       slug: 'av_techmosaic',
       masqued: false,
@@ -71,7 +76,8 @@ export async function seedReview() {
         'Excellent project execution! High-quality code, responsive design, and exceptional problem-solving skills.',
       name: 'Jonathan Rodric',
       stars: 5,
-      imgSrc: 'jonathan.jpeg',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/jonathan.jpeg',
       company: 'Skyline Digital',
       slug: 'jr_skylinedigital',
       masqued: false,

@@ -9,18 +9,12 @@ import {
   Post,
   Put,
   Query,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import * as fs from 'fs';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -31,11 +25,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
-
-const uploadPath = process.env.UPLOAD_PATH;
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
 
 @ApiTags('reviews')
 @Controller('reviews')
@@ -55,6 +44,21 @@ export class ReviewController {
   @ApiNotFoundResponse({ description: 'No reviews found' })
   async getReviews() {
     return await this.reviewService.getReviews();
+  }
+
+  /**
+   * SHOW
+   * _
+   * @description index a review
+   * @route GET /reviews/{id}
+   * @returns http resources
+   */
+  @Get('/show/:reviewId')
+  @ApiOperation({ summary: 'Get a review' })
+  @ApiResponse({ status: 200, description: 'Get all reviews successfully' })
+  @ApiNotFoundResponse({ description: 'No reviews found' })
+  async getReviewById(@Param('reviewId') reviewId: string) {
+    return await this.reviewService.getReviewById({ reviewId });
   }
 
   /**
@@ -115,35 +119,11 @@ export class ReviewController {
     description: 'The review has been successfully created.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: uploadPath,
-        filename: (_, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
   async createReview(
     @Body() createReviewDto: CreateReviewDto,
-    @UploadedFile() file: Express.Multer.File,
   ): Promise<Observable<CreateReviewDto>> {
-    if (!file) {
-      return await this.reviewService.createReview({
-        createReviewDto: {
-          ...createReviewDto,
-          imgSrc: 'defaultAvatar.png',
-        },
-      });
-      //throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
-    }
-
-    const imagePath = `${file.filename}`;
-
     return await this.reviewService.createReview({
-      createReviewDto: { ...createReviewDto, imgSrc: imagePath },
+      createReviewDto,
     });
   }
 
@@ -162,56 +142,10 @@ export class ReviewController {
     description: 'The review has been successfully updated.',
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: uploadPath,
-        filename: (_, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
   async updateReview(
     @Param('reviewId') reviewId: string,
     @Body() updateReviewDto: UpdateReviewDto,
-    @UploadedFile() file: Express.Multer.File,
   ): Promise<Observable<UpdateReviewDto>> {
-    // Récupérer le témoignage actuel pour obtenir l'ancienne image (si elle existe)
-    const existingReview = await this.reviewService.getReviewByID({
-      reviewId,
-    });
-
-    if (file) {
-      // Si un nouveau fichier est téléchargé, on crée le chemin de la nouvelle image
-      const updatedImgSrc = `${file.filename}`;
-
-      // Supprimer l'ancienne image si elle existe
-      if (
-        existingReview.imgSrc &&
-        existingReview.imgSrc !== 'defaultAvatar.png'
-      ) {
-        const oldImagePath = `.${existingReview.imgSrc}`;
-        try {
-          // Vérifier si le fichier existe avant de tenter de le supprimer
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath); // Supprimer l'ancienne image
-          }
-        } catch (error) {
-          console.error('Error deleting old image:', error);
-        }
-      }
-      return await this.reviewService.updateReview({
-        reviewId,
-        updateReviewDto: {
-          ...updateReviewDto,
-          imgSrc: updatedImgSrc,
-        },
-      });
-    }
-
-    // Mettre à jour le témoignage avec la nouvelle image (ou l'ancienne si aucun fichier n'a été téléchargé)
     return await this.reviewService.updateReview({
       reviewId,
       updateReviewDto,

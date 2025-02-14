@@ -7,7 +7,8 @@ export async function seedProject() {
     {
       title: 'AnguChaudiere',
       title_en: 'AnguChaudiere',
-      imgSrc: 'Projet 3 _ site de chaudiere angular.png',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/Projet 3 _ site de chaudiere angular.png',
       projectLink: 'https://github.com/yannisduvignau/Projet_angular',
       tags: ['Angular', 'Framework JS', 'Projet scolaire'],
       tags_en: ['Angular', 'Framework JS', 'School project'],
@@ -18,7 +19,7 @@ export async function seedProject() {
     {
       title: 'Jeu du Sudoku',
       title_en: 'Sudoku Game',
-      imgSrc: 'placeholder.webp',
+      imgSrc: '/public/placeholder.webp',
       projectLink: 'https://github.com/yannisduvignau/Sudoku',
       tags: ['C++', 'Projet scolaire'],
       tags_en: ['C++', 'School project'],
@@ -29,7 +30,7 @@ export async function seedProject() {
     {
       title: 'Lecteur de diaporama',
       title_en: 'Slideshow Viewer',
-      imgSrc: 'placeholder.webp',
+      imgSrc: '/public/placeholder.webp',
       projectLink: 'https://github.com/yannisduvignau/LecteurDiaporama',
       tags: ['Qt', 'Framework C++', 'Projet scolaire'],
       tags_en: ['Qt', 'C++ Framework', 'School project'],
@@ -40,7 +41,8 @@ export async function seedProject() {
     {
       title: 'Tic Tac Toe',
       title_en: 'Tic Tac Toe',
-      imgSrc: 'Projet 5 _ morpion react.png',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/Projet 5 _ morpion react.png',
       projectLink: 'https://github.com/yannisduvignau/Morpion',
       tags: ['Initiation React', 'Projet perso'],
       tags_en: ['React Introduction', 'Personal project'],
@@ -51,7 +53,8 @@ export async function seedProject() {
     {
       title: 'MeetEvent',
       title_en: 'MeetEvent',
-      imgSrc: 'meetevent.png',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/meetevent.png',
       projectLink: 'https://github.com/mattin-guiheneuf/S4.01-MeetEvent',
       tags: ['Application événementiel', 'Projet scolaire', 'Agile (Scrum)'],
       tags_en: ['Event app', 'School project', 'Agile (Scrum)'],
@@ -62,7 +65,8 @@ export async function seedProject() {
     {
       title: 'Le Bien Etre Du Cocon',
       title_en: 'The Well-Being of the Cocoon',
-      imgSrc: 'Projet 2 _ site amelie.png',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/Projet 2 _ site amelie.png',
       projectLink: 'https://www.lebienetreducocon.fr',
       tags: ['Laravel', 'Framework PHP', 'Projet client'],
       tags_en: ['Laravel', 'PHP Framework', 'Client project'],
@@ -73,7 +77,8 @@ export async function seedProject() {
     {
       title: 'Angular cours en ligne',
       title_en: 'Angular Online Course',
-      imgSrc: 'Projet 1 _ site de cours angular.png',
+      imgSrc:
+        'https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/Projet 1 _ site de cours angular.png',
       projectLink: 'https://github.com/yannisduvignau/Angular_Cours',
       tags: ['Angular', 'Framework JS', 'Projet scolaire'],
       tags_en: ['Angular', 'JS Framework', 'School project'],
@@ -84,7 +89,7 @@ export async function seedProject() {
     {
       title: 'Web Portfolio',
       title_en: 'Web Portfolio',
-      imgSrc: 'placeholder.webp',
+      imgSrc: '/public/placeholder.webp',
       projectLink: 'https://github.com/yannisduvignau/Portfolio',
       tags: ['React JS', 'Tailwind CSS', 'Framer motion', 'Projet perso'],
       tags_en: [
@@ -100,7 +105,8 @@ export async function seedProject() {
     {
       title: "API d'AUTH sécurisée",
       title_en: 'Secure AUTH API',
-      imgSrc: "Projet 6 _ api d'auth fastApi.png",
+      imgSrc:
+        "https://gfndzciwqmgwfyrvaxir.supabase.co/storage/v1/object/public/portfolio-images/Projet 6 _ api d'auth fastApi.png",
       projectLink: 'https://github.com/yannisduvignau/FastApi',
       tags: ['FastApi', 'Framework Python', 'Projet perso'],
       tags_en: ['FastApi', 'Python Framework', 'Personal project'],
